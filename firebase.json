@@ -8,7 +8,7 @@
             "source": "functions",
             "codebase": "default",
             "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
-            "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+            "predeploy": ["cd \"$RESOURCE_DIR\" && bun run build"]
         }
     ],
     "hosting": {
@@ -17,12 +17,12 @@
         "redirects": [
             {
                 "source": "/regulamin",
-                "destination": "https://github.com/theSaintKappa/kiermasz-zstio-v2/blob/main/regulamin.md/",
+                "destination": "https://docs.google.com/document/d/10V0JEs4Td39bX-TJb_HzQTnhXQX9kFeBqavDmYtkaKw/preview",
                 "type": 303
             },
             {
                 "source": "/info",
-                "destination": "https://github.com/theSaintKappa/kiermasz-zstio-v2/blob/main/regulamin.md/",
+                "destination": "https://docs.google.com/document/d/10V0JEs4Td39bX-TJb_HzQTnhXQX9kFeBqavDmYtkaKw/preview",
                 "type": 303
             }
         ],
