@@ -1,27 +1,74 @@
 <script lang="ts">
-    import { user } from '../stores';
-    import AuthButton from './AuthButton.svelte';
+    import type { FirebaseError } from "firebase/app";
+    import { signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+    import Swal from "sweetalert2";
+    import { auth } from "../firebaseConfig";
+    import { lastBackup, user } from "../stores";
+    import { modal, toast } from "../utils/swal";
+
+    async function showLoginModal() {
+        modal.fire({
+            title: "Zaloguj się",
+            html: `<form><input type="text" class="swal2-input" placeholder="Email" data-form-type="username"><input type="password" class="swal2-input" placeholder="Hasło" data-form-type="password"></form>`,
+            confirmButtonText: "Zaloguj się",
+            showCancelButton: false,
+            preConfirm: async () => {
+                const email = (<HTMLInputElement>Swal.getPopup()?.querySelector("input[type=text]")).value;
+                const password = (<HTMLInputElement>Swal.getPopup()?.querySelector("input[type=password]")).value;
+
+                await login(auth, email, password);
+            },
+        });
+    }
+
+    async function login(auth: Auth, email: string, password: string) {
+        if (!email || !password) return Swal.showValidationMessage(`Wpisz email i hasło`);
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            toast.fire({ icon: "success", title: "Zalogowano pomyślnie!", timer: 2000 });
+
+            if (userCredential.user.displayName !== null) return;
+        } catch (err) {
+            const error = err as FirebaseError;
+            if (["auth/invalid-email", "auth/wrong-password", "auth/user-not-found"].includes(error.code)) return Swal.showValidationMessage(`Nieprawidłowy email lub hasło`);
+            return Swal.showValidationMessage(`Wystąpił błąd podczas logowania`);
+        }
+
+        const result = await modal.fire({
+            title: "Cześć 👋",
+            html: `<p>Ustaw swoją nazwę użytkownika aby kontynuować.</p><input class="swal2-input" data-form-type="other">`,
+            showCancelButton: false,
+            preConfirm: () => {
+                const username = (<HTMLInputElement>Swal.getPopup()?.querySelector("input")).value;
+                if (username.length < 3) return Swal.showValidationMessage(`Nazwa użytkownika musi mieć co najmniej 3 znaki`);
+                if (username.length > 16) return Swal.showValidationMessage(`Nazwa użytkownika nie może mieć więcej niż 16 znaków`);
+                if (username.match(/[^a-zA-Z0-9]/g)) return Swal.showValidationMessage(`Nazwa użytkownika może zawierać tylko litery i cyfry`);
+
+                return username;
+            },
+        });
+
+        if (!result.isConfirmed) return;
+
+        if ($user) updateProfile($user, { displayName: result.value || "" }).then(() => toast.fire({ icon: "success", title: `<strong>${result.value}, witaj na kiermaszu!</strong>`, timer: 2000 }));
+    }
+
+    async function logout() {
+        await auth.signOut().then(() => toast.fire({ icon: "success", title: "Wylogowano pomyślnie!", timer: 2000 }));
+        $lastBackup = null;
+    }
 </script>
 
 <header>
     <div class="heading">
-        <svg width="45" height="55" viewBox="0 0 45 55" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg on:dblclick={showLoginModal} width="45" height="55" viewBox="0 0 45 55" fill="none" xmlns="http://www.w3.org/2000/svg" role="button" tabindex="0">
             <path
                 d="M22.2619 53.0017C24.2085 51.5688 26.0613 50.0126 27.8088 48.3427C29.6171 46.6148 31.295 44.7553 32.8287 42.7797C40.4852 32.8934 43.8241 20.6846 42.5546 6.84521C39.3666 5.51533 36.0886 4.41258 32.7451 3.54521C29.2054 2.62897 25.6002 1.98807 21.9616 1.62823C18.3924 2.03042 14.9159 2.69385 11.5265 3.59677C8.26092 4.4676 5.07779 5.55729 1.97029 6.8475C1.68528 9.45507 1.5735 12.0787 1.63571 14.701C1.69785 17.3012 1.95755 19.8929 2.41259 22.4537C4.67332 35.0648 11.6789 45.3062 22.2619 53.0017ZM28.9306 49.5103C26.9885 51.3665 24.9207 53.0867 22.742 54.6585L22.7408 54.6562L22.2699 55L21.7966 54.662C10.6064 46.6835 3.19519 35.9803 0.821024 22.7391C0.351372 20.0969 0.0832388 17.4228 0.0189402 14.74C-0.0521015 11.9763 0.0762318 9.12771 0.411961 6.19552L0.465815 5.72687L0.903523 5.5424C4.22121 4.13601 7.63301 2.96288 11.114 2.03156C14.6412 1.09035 18.2339 0.414331 21.862 0.00916667L21.9376 0L22.0247 0.00916667C25.8472 0.382708 29.5528 1.04729 33.1496 1.97885C36.7251 2.907 40.2271 4.09809 43.6271 5.5424L44.0716 5.73031L44.1175 6.20812C45.5521 20.6685 42.1111 33.4343 34.1086 43.7685C32.5263 45.8073 30.7952 47.7261 28.9295 49.5092L28.9306 49.5103Z"
                 fill="black"
             />
-            <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M22.2659 53.6135C37.7541 42.4084 44.9396 26.0986 43.0055 6.59885C36.3906 3.79614 29.3987 1.93417 21.9542 1.20542C14.7882 2.00521 8.00025 3.86375 1.52515 6.59885C-0.816938 27.0291 7.18671 42.8622 22.2659 53.6135Z"
-                fill="white"
-            />
-            <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M22.2578 52.1217C34.6317 42.7396 42.4772 30.0506 41.8585 13.7362C36.3218 11.3919 28.2288 9.83354 21.9977 9.22396C16.0004 9.89312 8.07815 11.4469 2.65835 13.7362C1.7669 30.8332 10.2403 43.1223 22.2578 52.1217Z"
-                fill="#DB0008"
-            />
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M22.2659 53.6135C37.7541 42.4084 44.9396 26.0986 43.0055 6.59885C36.3906 3.79614 29.3987 1.93417 21.9542 1.20542C14.7882 2.00521 8.00025 3.86375 1.52515 6.59885C-0.816938 27.0291 7.18671 42.8622 22.2659 53.6135Z" fill="white" />
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M22.2578 52.1217C34.6317 42.7396 42.4772 30.0506 41.8585 13.7362C36.3218 11.3919 28.2288 9.83354 21.9977 9.22396C16.0004 9.89312 8.07815 11.4469 2.65835 13.7362C1.7669 30.8332 10.2403 43.1223 22.2578 52.1217Z" fill="#DB0008" />
             <path
                 fill-rule="evenodd"
                 clip-rule="evenodd"
@@ -41,8 +88,10 @@
         </svg>
         <h1>Kiermasz ZSTiO</h1>
     </div>
-    <span>&bull;</span>
-    <AuthButton />
+    {#if $user}
+        <span>&bull;</span>
+        <button on:click={logout} class="btn">Wyloguj się</button>
+    {/if}
     {#if $user?.displayName}
         <div class="user">👋 Cześć, {$user.displayName}!</div>
     {/if}
@@ -90,6 +139,24 @@
         right: 1.5rem;
         font-size: 1.25rem;
         font-weight: 600;
+    }
+
+    button {
+        font-size: clamp(0.75rem, 3.25vw, 1rem);
+        font-weight: 700;
+        transition:
+            background-color 75ms ease,
+            scale 100ms ease,
+            box-shadow 75ms ease;
+    }
+
+    button:hover,
+    button:focus {
+        box-shadow: 0 0 24px -4px var(--accent-primary);
+    }
+
+    button:active {
+        scale: 0.9;
     }
 
     @media screen and (max-width: 500px) {
