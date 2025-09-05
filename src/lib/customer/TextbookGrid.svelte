@@ -1,42 +1,64 @@
 <script lang="ts">
-    import { collectionGroup, onSnapshot, orderBy, query, where } from 'firebase/firestore';
-    import { onMount } from 'svelte';
-    import { blur } from 'svelte/transition';
-    import { db } from '../../firebaseConfig';
-    import { searchQuery } from '../../stores';
-    import { converter } from '../../utils/converter';
+    import { collectionGroup, onSnapshot, orderBy, query, where } from "firebase/firestore";
+    import { onMount } from "svelte";
+    import { blur } from "svelte/transition";
+    import { db } from "../../firebaseConfig";
+    import { searchQuery } from "../../stores";
+    import { converter } from "../../utils/converter";
 
-    let textbooks: TextbookDocumentFull[] = [];
-    let filteredTextbooks: TextbookDocumentFull[] = [];
+    interface GroupedTextbook {
+        title: string;
+        count: number;
+        minPrice: number;
+        maxPrice: number;
+    }
+
+    let textbooks: GroupedTextbook[] = [];
+    let filteredTextbooks: GroupedTextbook[] = [];
 
     onMount(() => {
-        const q = query(collectionGroup(db, 'textbooks'), where('sold', '==', false), where('reservation.status', '==', false), orderBy('title', 'asc'));
+        const q = query(collectionGroup(db, "textbooks"), where("sold", "==", false), where("reservation.status", "==", false), orderBy("title", "asc"));
         const unsubscribe = onSnapshot(q.withConverter(converter<TextbookDocument>()), (snapshot) => {
-            let textbookDocuments: TextbookDocumentFull[] = [];
+            const groups = new Map<string, { count: number; minPrice: number; maxPrice: number }>();
             for (const doc of snapshot.docs) {
-                textbookDocuments.push({ ...doc.data(), id: doc.id });
+                const data = doc.data();
+                const title = data.title;
+                const price = data.price;
+                if (groups.has(title)) {
+                    const g = groups.get(title);
+                    if (g) {
+                        g.count++;
+                        g.minPrice = Math.min(g.minPrice, price);
+                        g.maxPrice = Math.max(g.maxPrice, price);
+                    }
+                } else {
+                    groups.set(title, { count: 1, minPrice: price, maxPrice: price });
+                }
             }
-            filteredTextbooks = textbooks = textbookDocuments;
+            textbooks = Array.from(groups.entries()).map(([title, g]) => ({ title, ...g }));
+            filteredTextbooks = textbooks;
+            console.log(textbooks);
         });
 
         return () => unsubscribe();
     });
 
     searchQuery.subscribe((query) => {
-        if (query === '') return (filteredTextbooks = textbooks);
-        filteredTextbooks = textbooks.filter((textbook) => textbook.title.toLowerCase().includes(query.toLowerCase()));
+        if (query === "") {
+            filteredTextbooks = textbooks;
+            return;
+        }
+        filteredTextbooks = textbooks.filter((group) => group.title.toLowerCase().includes(query.toLowerCase()));
     });
-
-    const conditions = ['akceptowalny', 'dostateczny', 'bardzo dobry', 'jak nowy'];
 </script>
 
 <section>
-    {#each filteredTextbooks as textbook, i (textbook.id)}
+    {#each filteredTextbooks as group, i (group.title)}
         <div class="card" in:blur={{ delay: i * 7.5, duration: 400 }}>
-            <span class="title" title={textbook.title}>{textbook.title}</span>
+            <span class="title" title={group.title}>{group.title}</span>
             <div class="info">
-                <span class="price">{textbook.price}zł</span>
-                <img src="/condition{textbook.condition}.svg" alt="" title="Stan fizyczny: {conditions[textbook.condition - 1]}" />
+                <span class="count">{group.count} szt.</span>
+                <span class="price">{group.minPrice === group.maxPrice ? group.minPrice : `od ${group.minPrice} do ${group.maxPrice}`}zł</span>
             </div>
         </div>
     {/each}
@@ -45,7 +67,7 @@
     <h2>Wczytywanie podręczników...</h2>
 {/if}
 {#if !filteredTextbooks.length && textbooks.length}
-    <h2>Brak podręczników pasujących do frazy "{$searchQuery.length > 16 ? $searchQuery.slice(0, 16) + '...' : $searchQuery}"</h2>
+    <h2>Brak podręczników pasujących do frazy "{$searchQuery.length > 16 ? $searchQuery.slice(0, 16) + "..." : $searchQuery}"</h2>
 {/if}
 
 <style>
@@ -82,11 +104,11 @@
         overflow: hidden;
     }
     .card::before {
-        content: '';
+        content: "";
         position: absolute;
         left: 0;
         height: 100%;
-        width: 2.5%;
+        width: 8px;
         background-color: var(--accent-secondary);
     }
 
@@ -95,6 +117,7 @@
         text-align: center;
         text-shadow: 0.125em 0.125em 2px rgba(0, 0, 0, 0.75);
         display: -webkit-box;
+        line-clamp: 2;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
@@ -104,22 +127,21 @@
     .info {
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+        gap: 1rem;
+    }
+
+    .info span {
+        font-weight: bold;
+        padding: 0.1rem 0.4rem;
+        border-radius: 0.25rem;
+        text-shadow: 0.125em 0.125em 1.5px rgba(0, 0, 0, 0.5);
     }
 
     .price {
-        font-weight: 900;
-        letter-spacing: 1px;
-        padding: 0.1rem 0.4rem;
-        border-radius: 0.25rem;
-        font-size: 1.2rem;
-        text-shadow: 0.125em 0.125em 1.5px rgba(0, 0, 0, 0.5);
         background-color: var(--price-color);
     }
 
-    img {
-        height: 90%;
-        border-radius: 50%;
-        box-shadow: 0 0 2px var(--font-light-opaque);
+    .count {
+        background-color: var(--accent-primary);
     }
 </style>

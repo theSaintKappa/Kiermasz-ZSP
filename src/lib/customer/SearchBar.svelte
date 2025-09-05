@@ -1,17 +1,17 @@
 <script lang="ts">
-import { searchQuery } from "../../stores";
+    import { searchQuery } from "../../stores";
 
-let inputField: HTMLInputElement;
+    let inputField: HTMLInputElement;
 
-function clearInput() {
-    $searchQuery = "";
-    inputField.focus();
-}
+    function clearInput() {
+        $searchQuery = "";
+        inputField.focus();
+    }
 </script>
 
 <section>
     <div>
-        <input type="text" bind:value={$searchQuery} bind:this={inputField} aria-label="Wyszukaj tytuł" placeholder="🔍 Wyszukaj tytuł..." />
+        <input type="text" bind:value={$searchQuery} bind:this={inputField} aria-label="Wyszukaj tytuł" placeholder="🔍 Wyszukaj tytuł podręcznika..." />
         <button on:click={clearInput} aria-label="Wyczyść pole wyszukiwania">❌</button>
     </div>
 </section>
@@ -44,7 +44,10 @@ function clearInput() {
         outline: 0 solid var(--accent-primary);
         border-radius: 0.5rem;
         padding-left: 0.5rem;
-        transition: border-color 100ms, outline-width 50ms, font-size 100ms;
+        transition:
+            border-color 100ms,
+            outline-width 50ms,
+            font-size 100ms;
     }
     input:focus-visible {
         border-color: var(--accent-primary);
@@ -63,7 +66,9 @@ function clearInput() {
         right: 0.75rem;
         scale: 0;
         /* transition: right 100ms; */
-        transition: scale 100ms, rotate 200ms ease-out;
+        transition:
+            scale 100ms,
+            rotate 200ms ease-out;
     }
     input:focus-visible + button,
     button:focus {
