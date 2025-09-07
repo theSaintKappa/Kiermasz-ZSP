@@ -2,14 +2,14 @@
     import { writingDisabled } from "../../stores";
     import BackToTopButton from "./BackToTopButton.svelte";
     import EOL from "./EOL.svelte";
-    import SearchBar from "./SearchBar.svelte";
+    import Filters from "./Filters.svelte";
     import TextbookGrid from "./TextbookGrid.svelte";
 </script>
 
 <svelte:head><title>Kiermasz ZSTiO</title></svelte:head>
 {#if !$writingDisabled}
     <div>
-        <SearchBar />
+        <Filters />
         <TextbookGrid />
     </div>
 {:else}

@@ -3,7 +3,7 @@
     import { onMount } from "svelte";
     import { blur } from "svelte/transition";
     import { db } from "../../firebaseConfig";
-    import { searchQuery } from "../../stores";
+    import { searchQuery, selectedSubject } from "../../stores";
     import { converter } from "../../utils/converter";
 
     interface GroupedTextbook {
@@ -11,6 +11,7 @@
         count: number;
         minPrice: number;
         maxPrice: number;
+        subject: string;
     }
 
     let textbooks: GroupedTextbook[] = [];
@@ -19,11 +20,12 @@
     onMount(() => {
         const q = query(collectionGroup(db, "textbooks"), where("sold", "==", false), where("reservation.status", "==", false), orderBy("title", "asc"));
         const unsubscribe = onSnapshot(q.withConverter(converter<TextbookDocument>()), (snapshot) => {
-            const groups = new Map<string, { count: number; minPrice: number; maxPrice: number }>();
+            const groups = new Map<string, { count: number; minPrice: number; maxPrice: number; subject: string }>();
             for (const doc of snapshot.docs) {
                 const data = doc.data();
                 const title = data.title;
                 const price = data.price;
+                const subject = data.subject;
                 if (groups.has(title)) {
                     const g = groups.get(title);
                     if (g) {
@@ -32,24 +34,27 @@
                         g.maxPrice = Math.max(g.maxPrice, price);
                     }
                 } else {
-                    groups.set(title, { count: 1, minPrice: price, maxPrice: price });
+                    groups.set(title, { count: 1, minPrice: price, maxPrice: price, subject });
                 }
             }
             textbooks = Array.from(groups.entries()).map(([title, g]) => ({ title, ...g }));
             filteredTextbooks = textbooks;
-            console.log(textbooks);
         });
 
         return () => unsubscribe();
     });
 
-    searchQuery.subscribe((query) => {
-        if (query === "") {
-            filteredTextbooks = textbooks;
-            return;
-        }
-        filteredTextbooks = textbooks.filter((group) => group.title.toLowerCase().includes(query.toLowerCase()));
-    });
+    function clearFilters() {
+        $searchQuery = "";
+        $selectedSubject = "";
+    }
+
+    $: {
+        let filtered = textbooks;
+        if ($searchQuery !== "") filtered = filtered.filter((group) => group.title.toLowerCase().includes($searchQuery.toLowerCase()));
+        if ($selectedSubject !== "") filtered = filtered.filter((group) => group.subject === $selectedSubject);
+        filteredTextbooks = filtered;
+    }
 </script>
 
 <section>
@@ -64,10 +69,11 @@
     {/each}
 </section>
 {#if !filteredTextbooks.length && !textbooks.length}
-    <h2>Wczytywanie podręczników...</h2>
+    <h3>Wczytywanie podręczników...</h3>
 {/if}
 {#if !filteredTextbooks.length && textbooks.length}
-    <h2>Brak podręczników pasujących do frazy "{$searchQuery.length > 16 ? $searchQuery.slice(0, 16) + "..." : $searchQuery}"</h2>
+    <h3>Brak podręczników pasujących do wybranych filtrów</h3>
+    <button on:click={clearFilters} class="btn">Wyczyść filtry</button>
 {/if}
 
 <style>
@@ -81,6 +87,10 @@
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         width: min(100% - 2 * var(--gap), 1800px);
         gap: var(--gap);
+    }
+
+    h3 {
+        text-align: center;
     }
 
     @media screen and (max-width: 700px) {

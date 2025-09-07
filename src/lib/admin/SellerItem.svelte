@@ -41,7 +41,7 @@
     let detailsElement: HTMLDetailsElement;
 
     let titleOptions: string;
-    $: titleOptions = $textbookTitles.map((title) => `<option value="${title}">`).join("");
+    $: titleOptions = $textbookTitles.map((title) => `<option value="${title.name}">${title.name}</option>`).join("");
 
     async function addTextbook() {
         await modal.fire({
@@ -54,6 +54,7 @@
     }
 
     async function preConfirm() {
+        if ($user === null) return;
         const form = Swal.getPopup()?.querySelector("form");
         const title = (<HTMLInputElement>form?.textbookTitle).value;
         const price = Number.parseFloat((<HTMLInputElement>form?.price).value);
@@ -61,10 +62,14 @@
 
         if (!title || !price || !condition) return Swal.showValidationMessage("Wypełnij wszystkie pola");
 
+        const subject = $textbookTitles.find((t) => t.name === title)?.subject;
+        if (!subject) return Swal.showValidationMessage("Nie znaleziono przedmiotu dla wybranego tytułu");
+
         const textbookDocument: TextbookDocument = {
             title,
             price,
             condition,
+            subject,
             sold: false,
             soldAt: null,
             email: seller.email,

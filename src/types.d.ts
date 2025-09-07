@@ -31,6 +31,7 @@ interface TextbookDataForm {
     title: string;
     price: number;
     condition: TextbookCondition;
+    subject: string;
 }
 
 interface TextbookDocument extends TextbookDataForm, Creator {
@@ -61,9 +62,18 @@ interface BackupDocument {
 
 interface TitleDocument extends Creator {
     name: string;
+    subject: string;
     createdAt: FieldValue;
 }
 
 interface TitleDocumentFull extends TitleDocument {
+    id: string;
+}
+
+interface SubjectDocument {
+    name: string;
+}
+
+interface SubjectDocumentFull extends SubjectDocument {
     id: string;
 }
