@@ -1,6 +1,6 @@
 <script lang="ts">
-    import DashboardPanels from "./lib/admin/DashboardPanels.svelte";
-    import Landing from "./lib/customer/Landing.svelte";
+    import Dashboard from "./lib/admin/Dashboard.svelte";
+    import Home from "./lib/customer/Home.svelte";
     import Footer from "./lib/Footer.svelte";
     import Header from "./lib/Header.svelte";
     import { user, writingDisabled } from "./stores";
@@ -9,9 +9,9 @@
 <Header />
 <main>
     {#if $user}
-        <DashboardPanels />
+        <Dashboard />
     {:else}
-        <Landing />
+        <Home />
     {/if}
 </main>
 <Footer />

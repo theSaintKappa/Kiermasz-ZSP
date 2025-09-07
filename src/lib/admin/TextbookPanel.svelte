@@ -127,11 +127,11 @@
     aside {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        /* gap: 1rem; */
     }
 
     h2 {
-        margin: 0.35rem 0;
+        margin: 1rem 0;
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -142,6 +142,7 @@
         flex-direction: column;
         gap: 0.5rem;
         width: 100%;
+        margin-bottom: 1rem;
     }
 
     input {

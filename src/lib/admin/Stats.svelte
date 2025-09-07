@@ -86,7 +86,6 @@
         flex-wrap: wrap;
         gap: 0.75rem;
         font-size: 0.9rem;
-        margin: 0.5rem 0;
     }
 
     .stats span {

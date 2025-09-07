@@ -6,6 +6,7 @@ export const user = writable<User | null>(null);
 
 export const searchQuery = writable<string>("");
 export const selectedSubject = writable<string>("");
+export const sellerSearchQuery = writable<string>("");
 
 export const textbookTitles = writable<{ name: string; subject: string }[]>([]);
 
