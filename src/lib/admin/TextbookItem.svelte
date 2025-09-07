@@ -1,8 +1,10 @@
 <script lang="ts">
-    import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
+    import { collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc } from "firebase/firestore";
     import Swal from "sweetalert2";
     import { db, sendEmail } from "../../firebaseConfig";
     import { writingDisabled } from "../../stores";
+    import type { SellerDocument, TextbookDocument, TextbookDocumentFull } from "../../types";
+    import { converter } from "../../utils/converter";
     import { fireErrorModal, modal, toast } from "../../utils/swal";
 
     export let textbook: TextbookDocumentFull;
@@ -12,6 +14,21 @@
     $: expiryLocaleDateString = textbook.reservation.expiry?.toDate().toLocaleDateString("pl", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) ?? null;
 
     let soldButton: HTMLButtonElement | null = null;
+
+    async function getAllSellerTextbooks(): Promise<TextbookDocumentFull[]> {
+        try {
+            const textbooksQuery = query(collection(db, "sellers", textbook.parentId, "textbooks"), orderBy("title"));
+            const snapshot = await getDocs(textbooksQuery.withConverter(converter<TextbookDocument>()));
+            return snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        } catch (error) {
+            console.error("Error fetching seller textbooks:", error);
+            return [];
+        }
+    }
+
+    function formatCurrency(amount: number): string {
+        return `${amount}zł`;
+    }
 
     async function updateStatus() {
         if (soldButton?.disabled) return;
@@ -38,11 +55,148 @@
         }
 
         if (textbook.email) {
-            sendEmail({
-                to: textbook.email,
-                subject: "Podręcznik sprzedany!",
-                html: `Cześć ${textbook.sellerEmailName},<br><br>Podręcznik "${textbook.title}" wystawiony przez ciebie na sprzedaż właśnie został kupiony za ${textbook.price}PLN.<br><br>Pozdrawiamy,<br>Biblioteka ZSTiO`,
-            });
+            const allTextbooks = await getAllSellerTextbooks();
+
+            if (allTextbooks.length > 0) {
+                const soldTextbooks = allTextbooks.filter((t) => t.sold);
+                const unsoldTextbooks = allTextbooks.filter((t) => !t.sold);
+                const totalSoldValue = soldTextbooks.reduce((sum, t) => sum + t.price, 0);
+                const totalUnsoldValue = unsoldTextbooks.reduce((sum, t) => sum + t.price, 0);
+
+                const currentDate = new Date().toLocaleDateString("pl", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                });
+
+                const emailHtml = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <style>
+                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 10px; background-color: #f5f5f5; }
+                            .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
+                            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+                            .header h1 { margin: 0 0 5px 0; font-size: 28px; font-weight: 900; }
+                            .header p { margin: 0; }
+                            .content { padding: 20px; }
+                            .sold-notification { background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+                            .sold-notification h2 { color: #155724; margin: 0 0 8px 0; font-size: 20px; }
+                            .sold-notification p { color: #155724; margin: 4px 0; }
+                            .section { margin: 18px 0; }
+                            .section h3 { color: #495057; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 12px; }
+                            .textbook-list { background: #f8f9fa; border-radius: 6px; padding: 12px; margin: 8px 0; }
+                            .textbook-item { display: table; width: 100%; padding: 8px 0; border-bottom: 1px solid #dee2e6; }
+                            .textbook-item:last-child { border-bottom: none; }
+                            .textbook-title { display: table-cell; font-weight: 500; vertical-align: middle; }
+                            .textbook-price { display: table-cell; font-weight: bold; color: #28a745; text-align: right; width: 80px; vertical-align: middle; }
+                            .stats { background: #e9ecef; border-radius: 6px; padding: 12px; margin: 12px 0; text-align: center; }
+                            .stat-item { display: inline-block; width: 30%; margin: 0 1.5%; vertical-align: top; }
+                            .stat-item-single { display: inline-block; width: 40%; vertical-align: top; }
+                            .stat-number { font-size: 24px; font-weight: bold; color: #495057; display: block; }
+                            .stat-label { font-size: 12px; color: #6c757d; text-transform: uppercase; display: block; }
+                            .footer { background: #f8f9fa; padding: 15px; text-align: center; color: #6c757d; font-size: 14px; }
+                            .empty-list { text-align: center; color: #6c757d; font-style: italic; padding: 15px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h1>📚 Kiermasz ZSTiO</h1>
+                                <p>Powiadomienie o sprzedaży</p>
+                            </div>
+                            
+                            <div class="content">
+                                <div class="sold-notification">
+                                    <h2>🎉 Twój podręcznik został sprzedany!</h2>
+                                    <p><strong>"${textbook.title}"</strong> został kupiony za <strong>${formatCurrency(textbook.price)}</strong></p>
+                                    <p><small>Data sprzedaży: ${currentDate}</small></p>
+                                </div>
+
+                                <div class="stats">
+                                    <div class="stat-item">
+                                        <div class="stat-number">${soldTextbooks.length}</div>
+                                        <div class="stat-label">Sprzedane</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number">${unsoldTextbooks.length}</div>
+                                        <div class="stat-label">Do sprzedania</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="stats" style="margin-top: 8px;">
+                                    <div class="stat-item-single">
+                                        <div class="stat-number">${formatCurrency(totalSoldValue)}</div>
+                                        <div class="stat-label">Zarobiłeś</div>
+                                    </div>
+                                </div>
+
+                                ${
+                                    soldTextbooks.length > 0
+                                        ? `
+                                <div class="section">
+                                    <h3>✅ Sprzedane podręczniki (${soldTextbooks.length})</h3>
+                                    <div class="textbook-list">
+                                        ${soldTextbooks
+                                            .map(
+                                                (t) => `
+                                            <div class="textbook-item">
+                                                <span class="textbook-title">${t.title}</span>
+                                                <span class="textbook-price">${formatCurrency(t.price)}</span>
+                                            </div>
+                                        `
+                                            )
+                                            .join("")}
+                                    </div>
+                                </div>
+                                `
+                                        : ""
+                                }
+
+                                ${
+                                    unsoldTextbooks.length > 0
+                                        ? `
+                                <div class="section">
+                                    <h3>⏳ Pozostałe podręczniki (${unsoldTextbooks.length})</h3>
+                                    <div class="textbook-list">
+                                        ${unsoldTextbooks
+                                            .map(
+                                                (t) => `
+                                            <div class="textbook-item">
+                                                <span class="textbook-title">${t.title}</span>
+                                                <span class="textbook-price">${formatCurrency(t.price)}</span>
+                                            </div>
+                                        `
+                                            )
+                                            .join("")}
+                                    </div>
+                                    <p style="margin-top: 12px; color: #6c757d; font-size: 14px;">
+                                        Potencjalny zysk z pozostałych podręczników: <strong>${formatCurrency(totalUnsoldValue)}</strong>
+                                    </p>
+                                </div>
+                                `
+                                        : '<div class="empty-list">🎉 Wszystkie Twoje podręczniki zostały sprzedane!</div>'
+                                }
+                            </div>
+                            
+                            <div class="footer">
+                                <p><strong>Biblioteka ZSTiO</strong></p>
+                                <p>Dziękujemy za uczestnictwo w kiermaszu!</p>
+                                <p>W razie pytań skontaktuj się z nami: <a href="mailto:kiermasz@mechaniktg.pl">kiermasz@mechaniktg.pl</a></p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                sendEmail({
+                    to: textbook.email,
+                    subject: `🎉 Podręcznik "${textbook.title}" został sprzedany!`,
+                    html: emailHtml,
+                });
+            }
         }
     }
 

@@ -1,11 +1,13 @@
 <script lang="ts">
     import { addDoc, collection, serverTimestamp } from "firebase/firestore";
     import Swal from "sweetalert2";
-    import { db, sendEmail } from "../../firebaseConfig";
+    import { db } from "../../firebaseConfig";
     import { user, writingDisabled } from "../../stores";
+    import type { SellerDataForm, SellerDocument } from "../../types";
     import { fireErrorModal, modal, toast } from "../../utils/swal";
 
     async function addSeller() {
+        if (!$user) return;
         const form = await modal.fire({
             title: "Dodaj nowego sprzedawcę",
             html: `<form><input class="swal2-input" placeholder="Imię" name="firstName" data-form-type="other"><input class="swal2-input" placeholder="Nazwisko" name="lastName" data-form-type="other"><input class="swal2-input" placeholder="Klasa" name="classSymbol" data-form-type="other"><input class="swal2-input" placeholder="Email" name="email" data-form-type="other"></form>`,
@@ -49,13 +51,6 @@
         } catch (err) {
             return fireErrorModal(err, "Wystąpił błąd podczas dodawania sprzedawcy.");
         }
-
-        if (email)
-            sendEmail({
-                to: email,
-                subject: "Witaj na kiermaszu!",
-                html: `Cześć ${firstName},<br><br>Witamy na kiermaszu podręczników używanych w mechaniku!<br>Będziesz otrzymywać zautomatyzowane wiadomości za każdym razem gdy któryś z twoich podręczników zostanie sprzedany.<br>Wszelkie pytania kierować możesz na adres email kiermasz@mechaniktg.pl lub osobiście w bibliotece.<br><br>Pozdrawiamy,<br>Biblioteka ZSTiO`,
-            });
     }
 
     document.onkeyup = (e) => {

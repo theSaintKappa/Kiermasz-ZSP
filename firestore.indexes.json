@@ -12,7 +12,8 @@
                     "fieldPath": "createdAt",
                     "order": "DESCENDING"
                 }
-            ]
+            ],
+            "density": "SPARSE_ALL"
         },
         {
             "collectionGroup": "textbooks",
@@ -30,7 +31,23 @@
                     "fieldPath": "title",
                     "order": "ASCENDING"
                 }
-            ]
+            ],
+            "density": "SPARSE_ALL"
+        },
+        {
+            "collectionGroup": "textbooks",
+            "queryScope": "COLLECTION_GROUP",
+            "fields": [
+                {
+                    "fieldPath": "sold",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "price",
+                    "order": "ASCENDING"
+                }
+            ],
+            "density": "SPARSE_ALL"
         },
         {
             "collectionGroup": "textbooks",
@@ -44,10 +61,34 @@
                     "fieldPath": "createdAt",
                     "order": "DESCENDING"
                 }
-            ]
+            ],
+            "density": "SPARSE_ALL"
         }
     ],
     "fieldOverrides": [
+        {
+            "collectionGroup": "textbooks",
+            "fieldPath": "price",
+            "ttl": false,
+            "indexes": [
+                {
+                    "order": "ASCENDING",
+                    "queryScope": "COLLECTION"
+                },
+                {
+                    "order": "DESCENDING",
+                    "queryScope": "COLLECTION"
+                },
+                {
+                    "arrayConfig": "CONTAINS",
+                    "queryScope": "COLLECTION"
+                },
+                {
+                    "order": "ASCENDING",
+                    "queryScope": "COLLECTION_GROUP"
+                }
+            ]
+        },
         {
             "collectionGroup": "textbooks",
             "fieldPath": "reservation.expiry",
@@ -71,6 +112,52 @@
                 },
                 {
                     "order": "DESCENDING",
+                    "queryScope": "COLLECTION_GROUP"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "textbooks",
+            "fieldPath": "sold",
+            "ttl": false,
+            "indexes": [
+                {
+                    "order": "ASCENDING",
+                    "queryScope": "COLLECTION"
+                },
+                {
+                    "order": "DESCENDING",
+                    "queryScope": "COLLECTION"
+                },
+                {
+                    "arrayConfig": "CONTAINS",
+                    "queryScope": "COLLECTION"
+                },
+                {
+                    "order": "ASCENDING",
+                    "queryScope": "COLLECTION_GROUP"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "textbooks",
+            "fieldPath": "title",
+            "ttl": false,
+            "indexes": [
+                {
+                    "order": "ASCENDING",
+                    "queryScope": "COLLECTION"
+                },
+                {
+                    "order": "DESCENDING",
+                    "queryScope": "COLLECTION"
+                },
+                {
+                    "arrayConfig": "CONTAINS",
+                    "queryScope": "COLLECTION"
+                },
+                {
+                    "order": "ASCENDING",
                     "queryScope": "COLLECTION_GROUP"
                 }
             ]

@@ -1,22 +1,17 @@
 <script lang="ts">
-    import { blur } from "svelte/transition";
+    import Dashboard from "./lib/admin/Dashboard.svelte";
+    import Home from "./lib/customer/Home.svelte";
     import Footer from "./lib/Footer.svelte";
     import Header from "./lib/Header.svelte";
-    import DashboardPanels from "./lib/admin/DashboardPanels.svelte";
-    import Landing from "./lib/customer/Landing.svelte";
     import { user, writingDisabled } from "./stores";
 </script>
 
 <Header />
 <main>
     {#if $user}
-        <DashboardPanels />
+        <Dashboard />
     {:else}
-        <span
-            >Lista sprzedawanych podręczników pojawi się tutaj w środę 16.09 📚</span
-        >
-
-        <!-- <Landing /> -->
+        <Home />
     {/if}
 </main>
 <Footer />
@@ -25,13 +20,6 @@
 {/if}
 
 <style>
-    span {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 2rem 1rem;
-        text-align: center;
-    }
-
     main {
         width: 100%;
         display: flex;

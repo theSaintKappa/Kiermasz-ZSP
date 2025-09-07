@@ -8,6 +8,7 @@
     import face4 from "/condition4.svg";
     import { db } from "../../firebaseConfig";
     import { textbookTitles, user, writingDisabled } from "../../stores";
+    import type { SellerDocumentFull, TextbookCondition, TextbookDocument, TextbookDocumentFull } from "../../types";
     import { converter } from "../../utils/converter";
     import { fireErrorModal, modal, toast } from "../../utils/swal";
     import AddNoteButton from "./AddNotesButton.svelte";
@@ -41,7 +42,7 @@
     let detailsElement: HTMLDetailsElement;
 
     let titleOptions: string;
-    $: titleOptions = $textbookTitles.map((title) => `<option value="${title}">`).join("");
+    $: titleOptions = $textbookTitles.map((title) => `<option value="${title.name}">${title.name}</option>`).join("");
 
     async function addTextbook() {
         await modal.fire({
@@ -54,6 +55,7 @@
     }
 
     async function preConfirm() {
+        if ($user === null) return;
         const form = Swal.getPopup()?.querySelector("form");
         const title = (<HTMLInputElement>form?.textbookTitle).value;
         const price = Number.parseFloat((<HTMLInputElement>form?.price).value);
@@ -61,14 +63,17 @@
 
         if (!title || !price || !condition) return Swal.showValidationMessage("Wypełnij wszystkie pola");
 
+        const subject = $textbookTitles.find((t) => t.name === title)?.subject;
+        if (!subject) return Swal.showValidationMessage("Nie znaleziono przedmiotu dla wybranego tytułu");
+
         const textbookDocument: TextbookDocument = {
             title,
             price,
             condition,
+            subject,
             sold: false,
             soldAt: null,
             email: seller.email,
-            sellerEmailName: `${seller.firstName}`,
             reservation: { status: false, holder: null, expiry: null },
             creator: { uid: $user.uid, email: $user.email },
             parentId: seller.id,
@@ -107,16 +112,18 @@
 <details bind:this={detailsElement}>
     <summary>
         <div class="summary">
-            <span>
+            <div>
                 {seller.firstName}
                 {seller.lastName}
                 {seller.classSymbol ? `| ${seller.classSymbol}` : ""}
-                <span class="notes" title={seller.notes}>{seller.notes ? (seller.notes.length > 64 ? `(${seller.notes.substring(0, 64)}...)` : `(${seller.notes})`) : ""}</span>
                 {#if seller.hasCashedOut}
                     <span title="Wypłacono {soldTextbooksSum}zł">💰</span>
                 {/if}
-            </span>
-            <button on:click={addTextbook} class="btn-inline" aria-label="Dodaj podręcznik" disabled={$writingDisabled || null}>+ Dodaj</button>
+                <button on:click={addTextbook} class="btn-inline" aria-label="Dodaj podręcznik" disabled={$writingDisabled || null}>+ Dodaj</button>
+            </div>
+            {#if seller.notes}
+                <span class="notes">📝 {seller.notes}</span>
+            {/if}
         </div>
     </summary>
     <div class="textbook-list">
@@ -155,22 +162,27 @@
     }
 
     summary {
-        padding: 0.5rem 0 0.5rem 1.25rem;
+        padding: 0.75rem 0 0.75rem 1rem;
     }
 
     .summary {
         display: inline-flex;
-        gap: 1.25rem;
+        flex-direction: column;
+        margin-left: 0.15rem;
+        max-width: calc(100% - 2rem);
     }
-    .summary > span {
+
+    .summary div {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .summary > div:first-child {
         font-weight: 500;
         cursor: pointer;
     }
 
-    /* details[open] .summary > span {
-        font-weight: 900;
-        letter-spacing: 1px;
-    } */
     details:not([open]) summary::marker {
         color: var(--font-light-opaque);
     }
@@ -202,5 +214,9 @@
     .notes {
         font-weight: 400;
         color: var(--font-light-opaque);
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        display: block;
     }
 </style>

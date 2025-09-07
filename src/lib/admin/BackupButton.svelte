@@ -1,32 +1,31 @@
 <script lang="ts">
-    import { addDoc, collection, Timestamp } from 'firebase/firestore';
-    import { db } from '../../firebaseConfig';
-    import { lastBackup, writingDisabled } from '../../stores';
-    import { fireErrorModal, modal, toast } from '../../utils/swal';
+    import { addDoc, collection, Timestamp } from "firebase/firestore";
+    import { db } from "../../firebaseConfig";
+    import { lastBackup, writingDisabled } from "../../stores";
+    import type { BackupDocument } from "../../types";
+    import { fireErrorModal, modal, toast } from "../../utils/swal";
 
     async function backup() {
         const result = await modal.fire({
-            title: 'Czy chcesz wykonać kopię zapasową?',
-            html: $lastBackup
-                ? `Ostatnia kopia zapasowa została wykonana:<br><code>${$lastBackup?.createdAt.toDate().toLocaleString()} (${$lastBackup?.type ?? 'unknown'})</code>`
-                : 'Nie wykonano jeszcze żadnej kopii zapasowej',
-            confirmButtonText: 'Wykonaj',
-            icon: 'question',
+            title: "Czy chcesz wykonać kopię zapasową?",
+            html: $lastBackup ? `Ostatnia kopia zapasowa została wykonana:<br><code>${$lastBackup?.createdAt.toDate().toLocaleString()} (${$lastBackup?.type ?? "unknown"})</code>` : "Nie wykonano jeszcze żadnej kopii zapasowej",
+            confirmButtonText: "Wykonaj",
+            icon: "question",
         });
         if (!result.isConfirmed) return;
 
         const backupDoc: BackupDocument = {
             createdAt: Timestamp.now(),
-            status: 'pending',
-            type: 'manual',
+            status: "pending",
+            type: "manual",
         };
 
         try {
-            await addDoc(collection(db, 'backups'), backupDoc);
+            await addDoc(collection(db, "backups"), backupDoc);
 
-            toast.fire({ title: 'Zaplanowano kopię zapasową', icon: 'success', timer: 2000 });
+            toast.fire({ title: "Zaplanowano kopię zapasową", icon: "success", timer: 2000 });
         } catch (err) {
-            fireErrorModal(err, 'Wystąpił błąd podczas planowania kopii zapasowej.');
+            fireErrorModal(err, "Wystąpił błąd podczas planowania kopii zapasowej.");
         }
     }
 </script>
