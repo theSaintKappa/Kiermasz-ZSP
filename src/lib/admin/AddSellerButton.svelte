@@ -3,9 +3,11 @@
     import Swal from "sweetalert2";
     import { db, sendEmail } from "../../firebaseConfig";
     import { user, writingDisabled } from "../../stores";
+    import type { SellerDataForm, SellerDocument } from "../../types";
     import { fireErrorModal, modal, toast } from "../../utils/swal";
 
     async function addSeller() {
+        if (!$user) return;
         const form = await modal.fire({
             title: "Dodaj nowego sprzedawcę",
             html: `<form><input class="swal2-input" placeholder="Imię" name="firstName" data-form-type="other"><input class="swal2-input" placeholder="Nazwisko" name="lastName" data-form-type="other"><input class="swal2-input" placeholder="Klasa" name="classSymbol" data-form-type="other"><input class="swal2-input" placeholder="Email" name="email" data-form-type="other"></form>`,

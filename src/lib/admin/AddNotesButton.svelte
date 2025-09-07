@@ -1,6 +1,7 @@
 <script lang="ts">
     import { doc, updateDoc } from "firebase/firestore";
     import { db } from "../../firebaseConfig";
+    import type { SellerDocumentFull } from "../../types";
     import { fireErrorModal, modal, toast } from "../../utils/swal";
 
     export let seller: SellerDocumentFull;

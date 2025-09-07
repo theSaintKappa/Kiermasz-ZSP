@@ -8,6 +8,7 @@
     import face4 from "/condition4.svg";
     import { db } from "../../firebaseConfig";
     import { textbookTitles, user, writingDisabled } from "../../stores";
+    import type { SellerDocumentFull, TextbookCondition, TextbookDocument, TextbookDocumentFull } from "../../types";
     import { converter } from "../../utils/converter";
     import { fireErrorModal, modal, toast } from "../../utils/swal";
     import AddNoteButton from "./AddNotesButton.svelte";

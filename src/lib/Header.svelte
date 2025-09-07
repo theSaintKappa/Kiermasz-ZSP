@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { FirebaseError } from "firebase/app";
-    import { signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+    import { type Auth, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
     import Swal from "sweetalert2";
     import { auth } from "../firebaseConfig";
     import { lastBackup, user } from "../stores";

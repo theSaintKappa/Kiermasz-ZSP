@@ -3,6 +3,7 @@
     import Swal from "sweetalert2";
     import { db, sendEmail } from "../../firebaseConfig";
     import { writingDisabled } from "../../stores";
+    import type { SellerDocument, TextbookDocument, TextbookDocumentFull } from "../../types";
     import { converter } from "../../utils/converter";
     import { fireErrorModal, modal, toast } from "../../utils/swal";
 

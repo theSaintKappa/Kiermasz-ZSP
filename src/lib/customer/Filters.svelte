@@ -3,6 +3,7 @@
     import { onMount } from "svelte";
     import { db } from "../../firebaseConfig";
     import { searchQuery, selectedSubject } from "../../stores";
+    import type { SubjectDocument, SubjectDocumentFull } from "../../types";
     import { converter } from "../../utils/converter";
 
     let subjects: SubjectDocumentFull[] = [];

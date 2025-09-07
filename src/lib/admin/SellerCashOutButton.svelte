@@ -1,7 +1,8 @@
 <script lang="ts">
-    import { doc, updateDoc } from 'firebase/firestore';
-    import { db } from '../../firebaseConfig';
-    import { fireErrorModal, modal, toast } from '../../utils/swal';
+    import { doc, updateDoc } from "firebase/firestore";
+    import { db } from "../../firebaseConfig";
+    import type { SellerDocumentFull } from "../../types";
+    import { fireErrorModal, modal, toast } from "../../utils/swal";
 
     export let seller: SellerDocumentFull;
     export let soldTextbooksSum: number;
@@ -10,8 +11,8 @@
         const { isConfirmed } = await modal.fire({
             title: `💸 Zaznacz wypłatę`,
             html: `<code>${seller.firstName} ${seller.lastName}</code> - <strong>${soldTextbooksSum}zł</strong>`,
-            confirmButtonText: '💰 Tak',
-            icon: 'question',
+            confirmButtonText: "💰 Tak",
+            icon: "question",
         });
 
         if (!isConfirmed) return;
@@ -19,12 +20,12 @@
         try {
             await updateDoc(doc(db, `sellers/${seller.id}`), { hasCashedOut: true });
             toast.fire({
-                icon: 'success',
+                icon: "success",
                 title: `Odznaczono wypłatę`,
                 text: `${seller.firstName} ${seller.lastName} - ${soldTextbooksSum}zł`,
             });
         } catch (err) {
-            return fireErrorModal(err, 'Wystąpił błąd podczas zaznaczania wypłaty.');
+            return fireErrorModal(err, "Wystąpił błąd podczas zaznaczania wypłaty.");
         }
     }
 </script>

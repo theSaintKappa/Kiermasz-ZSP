@@ -3,6 +3,7 @@
     import { onMount } from "svelte";
     import { db } from "../../firebaseConfig";
     import { textbookTitles, user, writingDisabled } from "../../stores";
+    import type { SubjectDocument, SubjectDocumentFull, TitleDocument, TitleDocumentFull } from "../../types";
     import { converter } from "../../utils/converter";
     import { toast } from "../../utils/swal";
 

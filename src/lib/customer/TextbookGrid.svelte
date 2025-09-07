@@ -4,6 +4,7 @@
     import { blur } from "svelte/transition";
     import { db } from "../../firebaseConfig";
     import { searchQuery, selectedSubject } from "../../stores";
+    import type { TextbookDocument } from "../../types";
     import { converter } from "../../utils/converter";
 
     interface GroupedTextbook {
