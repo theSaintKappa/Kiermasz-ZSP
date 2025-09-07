@@ -73,7 +73,6 @@
             sold: false,
             soldAt: null,
             email: seller.email,
-            sellerEmailName: `${seller.firstName}`,
             reservation: { status: false, holder: null, expiry: null },
             creator: { uid: $user.uid, email: $user.email },
             parentId: seller.id,
