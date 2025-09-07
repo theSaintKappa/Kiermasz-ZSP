@@ -15,20 +15,6 @@
 
     let soldButton: HTMLButtonElement | null = null;
 
-    async function getSellerData(): Promise<{ name: string; lastName: string } | null> {
-        try {
-            const sellerDoc = await getDoc(doc(db, "sellers", textbook.parentId).withConverter(converter<SellerDocument>()));
-            if (sellerDoc.exists()) {
-                const seller = sellerDoc.data();
-                return { name: seller.firstName, lastName: seller.lastName };
-            }
-            return null;
-        } catch (error) {
-            console.error("Error fetching seller:", error);
-            return null;
-        }
-    }
-
     async function getAllSellerTextbooks(): Promise<TextbookDocumentFull[]> {
         try {
             const textbooksQuery = query(collection(db, "sellers", textbook.parentId, "textbooks"), orderBy("title"));
@@ -69,10 +55,9 @@
         }
 
         if (textbook.email) {
-            const sellerData = await getSellerData();
             const allTextbooks = await getAllSellerTextbooks();
 
-            if (sellerData && allTextbooks.length > 0) {
+            if (allTextbooks.length > 0) {
                 const soldTextbooks = allTextbooks.filter((t) => t.sold);
                 const unsoldTextbooks = allTextbooks.filter((t) => !t.sold);
                 const totalSoldValue = soldTextbooks.reduce((sum, t) => sum + t.price, 0);
@@ -91,27 +76,29 @@
                     <head>
                         <meta charset="utf-8">
                         <style>
-                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f5f5f5; }
+                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 10px; background-color: #f5f5f5; }
                             .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
-                            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
-                            .header h1 { margin: 0; font-size: 28px; font-weight: 900; }
-                            .content { padding: 30px; }
-                            .sold-notification { background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
-                            .sold-notification h2 { color: #155724; margin: 0 0 10px 0; font-size: 20px; }
-                            .sold-notification p { color: #155724; margin: 5px 0; }
-                            .section { margin: 25px 0; }
-                            .section h3 { color: #495057; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-bottom: 15px; }
-                            .textbook-list { background: #f8f9fa; border-radius: 6px; padding: 15px; margin: 10px 0; }
-                            .textbook-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #dee2e6; }
+                            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+                            .header h1 { margin: 0 0 5px 0; font-size: 28px; font-weight: 900; }
+                            .header p { margin: 0; }
+                            .content { padding: 20px; }
+                            .sold-notification { background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+                            .sold-notification h2 { color: #155724; margin: 0 0 8px 0; font-size: 20px; }
+                            .sold-notification p { color: #155724; margin: 4px 0; }
+                            .section { margin: 18px 0; }
+                            .section h3 { color: #495057; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 12px; }
+                            .textbook-list { background: #f8f9fa; border-radius: 6px; padding: 12px; margin: 8px 0; }
+                            .textbook-item { display: table; width: 100%; padding: 8px 0; border-bottom: 1px solid #dee2e6; }
                             .textbook-item:last-child { border-bottom: none; }
-                            .textbook-title { font-weight: 500; flex: 1; }
-                            .textbook-price { font-weight: bold; color: #28a745; margin-left: 10px; }
-                            .stats { display: flex; justify-content: space-between; background: #e9ecef; border-radius: 6px; padding: 15px; margin: 15px 0; }
-                            .stat-item { text-align: center; }
-                            .stat-number { font-size: 24px; font-weight: bold; color: #495057; }
-                            .stat-label { font-size: 12px; color: #6c757d; text-transform: uppercase; }
-                            .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 14px; }
-                            .empty-list { text-align: center; color: #6c757d; font-style: italic; padding: 20px; }
+                            .textbook-title { display: table-cell; font-weight: 500; vertical-align: middle; }
+                            .textbook-price { display: table-cell; font-weight: bold; color: #28a745; text-align: right; width: 80px; vertical-align: middle; }
+                            .stats { background: #e9ecef; border-radius: 6px; padding: 12px; margin: 12px 0; text-align: center; }
+                            .stat-item { display: inline-block; width: 30%; margin: 0 1.5%; vertical-align: top; }
+                            .stat-item-single { display: inline-block; width: 40%; vertical-align: top; }
+                            .stat-number { font-size: 24px; font-weight: bold; color: #495057; display: block; }
+                            .stat-label { font-size: 12px; color: #6c757d; text-transform: uppercase; display: block; }
+                            .footer { background: #f8f9fa; padding: 15px; text-align: center; color: #6c757d; font-size: 14px; }
+                            .empty-list { text-align: center; color: #6c757d; font-style: italic; padding: 15px; }
                         </style>
                     </head>
                     <body>
@@ -123,7 +110,7 @@
                             
                             <div class="content">
                                 <div class="sold-notification">
-                                    <h2>🎉 Gratulacje! Twój podręcznik został sprzedany!</h2>
+                                    <h2>🎉 Twój podręcznik został sprzedany!</h2>
                                     <p><strong>"${textbook.title}"</strong> został kupiony za <strong>${formatCurrency(textbook.price)}</strong></p>
                                     <p><small>Data sprzedaży: ${currentDate}</small></p>
                                 </div>
@@ -137,7 +124,10 @@
                                         <div class="stat-number">${unsoldTextbooks.length}</div>
                                         <div class="stat-label">Do sprzedania</div>
                                     </div>
-                                    <div class="stat-item">
+                                </div>
+                                
+                                <div class="stats" style="margin-top: 8px;">
+                                    <div class="stat-item-single">
                                         <div class="stat-number">${formatCurrency(totalSoldValue)}</div>
                                         <div class="stat-label">Zarobiłeś</div>
                                     </div>
@@ -182,7 +172,7 @@
                                             )
                                             .join("")}
                                     </div>
-                                    <p style="margin-top: 15px; color: #6c757d; font-size: 14px;">
+                                    <p style="margin-top: 12px; color: #6c757d; font-size: 14px;">
                                         Potencjalny zysk z pozostałych podręczników: <strong>${formatCurrency(totalUnsoldValue)}</strong>
                                     </p>
                                 </div>
@@ -194,6 +184,7 @@
                             <div class="footer">
                                 <p><strong>Biblioteka ZSTiO</strong></p>
                                 <p>Dziękujemy za uczestnictwo w kiermaszu!</p>
+                                <p>W razie pytań skontaktuj się z nami: <a href="mailto:kiermasz@mechaniktg.pl">kiermasz@mechaniktg.pl</a></p>
                             </div>
                         </div>
                     </body>
