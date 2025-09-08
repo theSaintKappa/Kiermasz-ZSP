@@ -57,23 +57,48 @@
         if ($user === null) return;
         if (titleInput.value.trim() === "") return toast.fire({ icon: "error", title: "Wprowadź tytuł podręcznika", timer: 2000 });
         if (subjectInput.value === "") return toast.fire({ icon: "error", title: "Wybierz przedmiot", timer: 2000 });
-        const titleDocument: TitleDocument = {
-            name: titleInput.value,
-            subject: subjectInput.value,
-            createdAt: serverTimestamp(),
-            creator: {
-                uid: $user.uid,
-                email: $user.email,
-            },
-        };
-        addDoc(collection(db, "titles"), titleDocument)
-            .then(() => {
-                toast.fire({ icon: "success", title: "Dodano podręcznik", timer: 1500 });
-            })
-            .catch((error) => {
-                console.error("Error adding document: ", error);
-                toast.fire({ icon: "error", title: "Błąd podczas dodawania podręcznika", timer: 2000 });
-            });
+
+        const subjectName = subjectInput.value.trim();
+        const titleName = titleInput.value.trim();
+
+        // Check if the subject exists
+        const subjectExists = subjects.some((subject) => subject.name.toLowerCase() === subjectName.toLowerCase());
+
+        try {
+            // If subject doesn't exist, add it first
+            if (!subjectExists) {
+                const subjectDocument: SubjectDocument = {
+                    name: subjectName,
+                };
+
+                await addDoc(collection(db, "subjects"), subjectDocument);
+
+                // Show toast for new subject creation
+                toast.fire({
+                    icon: "info",
+                    title: `Dodano nowy przedmiot: ${subjectName}`,
+                    timer: 3000,
+                });
+            }
+
+            // Now add the title
+            const titleDocument: TitleDocument = {
+                name: titleName,
+                subject: subjectName,
+                createdAt: serverTimestamp(),
+                creator: {
+                    uid: $user.uid,
+                    email: $user.email,
+                },
+            };
+
+            await addDoc(collection(db, "titles"), titleDocument);
+            toast.fire({ icon: "success", title: "Dodano podręcznik", timer: 1500 });
+        } catch (error) {
+            console.error("Error adding document: ", error);
+            toast.fire({ icon: "error", title: "Błąd podczas dodawania podręcznika", timer: 2000 });
+        }
+
         titleInput.value = "";
         subjectInput.value = "";
     }
@@ -92,13 +117,13 @@
         </svg>Dodaj nowy podręcznik
     </h2>
     <form on:submit|preventDefault={addTitle}>
-        <input type="text" bind:this={titleInput} placeholder="Tytuł..." />
         <input type="text" list="subjects" bind:this={subjectInput} placeholder="Przedmiot..." />
         <datalist id="subjects">
             {#each subjects as subject}
                 <option value={subject.name}>{subject.name}</option>
             {/each}
         </datalist>
+        <input type="text" bind:this={titleInput} placeholder="Tytuł..." />
         <button class="btn btn-hover" disabled={$writingDisabled || null}>
             <svg xmlns="http://www.w3.org/2000/svg" height="1.25em" viewBox="0 0 448 512">
                 <path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" />

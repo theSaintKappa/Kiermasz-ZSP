@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { collection, collectionGroup, onSnapshot, query, orderBy, where, limit } from "firebase/firestore";
+    import { collection, collectionGroup, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
     import { onMount } from "svelte";
     import { db } from "../../firebaseConfig";
     import type { BackupDocument, SellerDocument, TextbookDocument } from "../../types";

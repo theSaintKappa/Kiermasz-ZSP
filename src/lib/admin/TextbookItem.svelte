@@ -200,6 +200,32 @@
         }
     }
 
+    async function markAsUnsold() {
+        const result = await modal.fire({
+            icon: "warning",
+            title: "Czy jesteś pewien?",
+            html: `Czy chcesz oznaczyć podręcznik "<code>${textbook.title}</code>" jako niesprzedany?<br><br><i>Ta akcja cofnie sprzedaż podręcznika.</i>`,
+            confirmButtonText: "Tak, oznacz jako niesprzedany",
+            cancelButtonText: "Anuluj",
+            showCancelButton: true,
+            focusCancel: true,
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await updateDoc(textbookDoc, { sold: false, soldAt: null });
+
+            toast.fire({
+                icon: "success",
+                title: `Oznaczono podręcznik <strong>${textbook.title}</strong> jako niesprzedany!`,
+                timer: 2000,
+            });
+        } catch (err) {
+            return fireErrorModal(err, "Wystąpił błąd podczas oznaczania podręcznika jako niesprzedany.");
+        }
+    }
+
     async function createReservation() {
         const form = await modal.fire({
             title: `Zarezerwuj <strong>${textbook.title}</strong>\n(do końca dnia)`,
@@ -251,6 +277,9 @@
         {/if}
     {:else if textbook.soldAt}
         <span class="info">{new Date(textbook.soldAt.toMillis()).toLocaleString()}</span>
+        <div class="buttons">
+            <button on:click={markAsUnsold} disabled={$writingDisabled || null} aria-label="Oznacz jako niesprzedany" class="error-button">Błąd?</button>
+        </div>
     {/if}
 </span>
 
@@ -351,5 +380,13 @@
     button:hover::before {
         background-color: var(--accent-secondary);
         height: 30%;
+    }
+
+    .error-button::before {
+        background-color: #ff4444;
+    }
+
+    .error-button:hover::before {
+        background-color: #ff6666;
     }
 </style>
