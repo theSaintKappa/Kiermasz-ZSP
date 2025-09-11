@@ -93,8 +93,12 @@
     --btn-hover: hsl(248, 66%, 22.5%);
     --font-light: hsla(0, 0%, 93%, 0.933);
     --font-light-opaque: hsla(0, 0%, 75%, 0.45);
+
     --price-color: #19da3380;
+    --lost-color: #1787ff;
+    --success-color: #00ec00;
     --warning-color: #eed202;
+    --error-color: #ff4444;
 }
 
 *,

@@ -45,7 +45,7 @@
         }
 
         try {
-            await updateDoc(textbookDoc, { sold: true, soldAt: serverTimestamp(), "reservation.status": false });
+            await updateDoc(textbookDoc, { sold: true, soldAt: serverTimestamp(), "reservation.status": false, isLost: false });
 
             new Audio("/sounds/set-sold.mp3").play();
 
@@ -258,16 +258,50 @@
             fireErrorModal(err, "Wystąpił błąd podczas tworzenia rezerwacji.");
         }
     }
+
+    async function markAsLost() {
+        const result = await modal.fire({
+            icon: "warning",
+            title: "Czy jesteś pewien?",
+            html: `Czy chcesz oznaczyć podręcznik "<code>${textbook.title}</code>" jako zgubiony?`,
+            confirmButtonText: "Tak, oznacz jako zgubiony",
+            cancelButtonText: "Anuluj",
+            showCancelButton: true,
+            focusCancel: true,
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await updateDoc(textbookDoc, { isLost: true });
+
+            toast.fire({
+                icon: "success",
+                title: `Oznaczono podręcznik <strong>${textbook.title}</strong> jako zgubiony.`,
+                timer: 2000,
+            });
+        } catch (err) {
+            return fireErrorModal(err, "Wystąpił błąd podczas oznaczania podręcznika jako zgubiony.");
+        }
+    }
 </script>
 
 <span class:sold={textbook.sold} class:reserved={textbook.reservation.status && !textbook.sold} class="textbook">
-    <span class:crossed-out={textbook.sold}>{textbook.title}</span>
+    {#if textbook.isLost}
+        <strong class:lost={textbook.isLost}>Brak na stanie❗</strong>
+    {/if}
+    <div class:crossed-out={textbook.sold || textbook.isLost} class:lost={textbook.isLost}>
+        {textbook.title}
+    </div>
     <div class="price">{textbook.price}zł</div>
     {#if !textbook.sold}
         <div class="buttons">
-            <button on:dblclick={updateStatus} bind:this={soldButton} disabled={$writingDisabled || null} aria-label="Oznacz jako sprzedany">Sprzedane</button>
+            <button on:dblclick={updateStatus} bind:this={soldButton} disabled={$writingDisabled || null} aria-label="Oznacz jako sprzedany" class="sold-btn">Sprzedane</button>
             {#if !textbook.reservation.status}
-                <button on:click={createReservation} disabled={$writingDisabled || null} aria-label="Dodaj rezerwację">Rezerwacja</button>
+                <button on:click={createReservation} disabled={$writingDisabled || null} aria-label="Dodaj rezerwację" class="reservation-btn">Rezerwacja</button>
+            {/if}
+            {#if !textbook.sold && !textbook.isLost}
+                <button on:click={markAsLost} disabled={$writingDisabled || null} aria-label="Oznacz jako zgubiony" class="lost-btn">Zgubiony</button>
             {/if}
         </div>
         {#if textbook.reservation.status}
@@ -298,6 +332,21 @@
     .reserved::before {
         content: "🔒";
         margin-right: 0.25rem;
+    }
+    .lost {
+        color: var(--lost-color);
+    }
+    .sold-btn::before,
+    .sold-btn:hover::before {
+        background-color: var(--success-color);
+    }
+    .reservation-btn::before,
+    .reservation-btn:hover::before {
+        background-color: var(--warning-color);
+    }
+    .lost-btn::before,
+    .lost-btn:hover::before {
+        background-color: var(--lost-color);
     }
     .info {
         margin-left: 0.5rem;
@@ -382,11 +431,8 @@
         height: 30%;
     }
 
-    .error-button::before {
-        background-color: #ff4444;
-    }
-
+    .error-button::before,
     .error-button:hover::before {
-        background-color: #ff6666;
+        background-color: var(--error-color);
     }
 </style>

@@ -35,6 +35,7 @@ export interface TextbookDocument extends TextbookDataForm, Creator {
     createdAt: FieldValue;
     sold: boolean;
     soldAt: Timestamp | null;
+    isLost: boolean;
     email: string;
     reservation: {
         status: boolean;

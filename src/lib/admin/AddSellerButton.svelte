@@ -1,5 +1,6 @@
 <script lang="ts">
     import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+    import { onMount } from "svelte";
     import Swal from "sweetalert2";
     import { db } from "../../firebaseConfig";
     import { user, writingDisabled } from "../../stores";
@@ -20,7 +21,7 @@
                 const email = (<HTMLInputElement>form?.email).value || null;
 
                 if (!firstName || !lastName || !classSymbol) return Swal.showValidationMessage("Wypełnij wszystkie pola");
-                if (email && !/[\w-\.]+@([\w-]+\.)+[\w-]{2,4}/.test(email)) return Swal.showValidationMessage("Niepoprawny adres email");
+                if (email && !/[\w-.]+@([\w-]+\.)+[\w-]{2,4}/.test(email)) return Swal.showValidationMessage("Niepoprawny adres email");
 
                 return { firstName, lastName, classSymbol, email };
             },
@@ -53,9 +54,20 @@
         }
     }
 
-    document.onkeyup = (e) => {
-        if (e.key === "Enter" && e.ctrlKey && !Swal.getPopup()) addSeller();
-    };
+    function handleKeydown(event: KeyboardEvent) {
+        // Add seller with Cmd + Enter (or Ctrl + Enter on non-Mac)
+        if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !Swal.getPopup()) {
+            event.preventDefault();
+            addSeller();
+        }
+    }
+
+    onMount(() => {
+        document.addEventListener("keydown", handleKeydown);
+        return () => {
+            document.removeEventListener("keydown", handleKeydown);
+        };
+    });
 </script>
 
 <button on:click={addSeller} class="btn btn-hover" aria-label="Dodaj nowego sprzedawcę" disabled={$writingDisabled || null}>

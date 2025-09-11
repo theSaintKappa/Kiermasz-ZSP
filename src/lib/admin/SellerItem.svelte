@@ -73,6 +73,7 @@
             subject,
             sold: false,
             soldAt: null,
+            isLost: false,
             email: seller.email,
             reservation: { status: false, holder: null, expiry: null },
             creator: { uid: $user.uid, email: $user.email },
@@ -149,6 +150,12 @@
                 <AddNoteButton {seller} {notes} />
             </div>
         {/if}
+        <div class="details">
+            {#if seller.email}
+                <span>{seller.email}</span>
+            {/if}
+            <a href={`https://console.firebase.google.com/u/0/project/kiermasz-zstio-v2/firestore/databases/-default-/data/~2Fsellers~2F${seller.id}`} target="_blank" rel="noopener noreferrer">{seller.id}</a>
+        </div>
     </div>
 </details>
 
@@ -205,6 +212,19 @@
         border-radius: 0.25rem;
         background-color: var(--accent-secondary);
         text-wrap: nowrap;
+    }
+
+    .details {
+        display: flex;
+        gap: 1rem;
+    }
+    .details span,
+    .details a {
+        font-size: 0.75rem;
+        color: var(--font-light-opaque);
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
     }
 
     .textbook-list-empty {

@@ -19,6 +19,7 @@
                 filteredSellers = sellers;
             } else {
                 const query = searchQuery.toLowerCase().trim();
+                window.scrollTo({ top: 0, behavior: "smooth" });
                 filteredSellers = sellers.filter((seller) => {
                     const firstName = seller.firstName.toLowerCase();
                     const lastName = seller.lastName.toLowerCase();
@@ -108,6 +109,7 @@
         color: var(--font-light-opaque);
         border: 2px solid var(--accent-primary);
         border-radius: 1rem;
+        margin-bottom: 1rem;
     }
 
     .no-results p {
