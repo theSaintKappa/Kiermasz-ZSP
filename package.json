@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "mcp-tunnel:start": "ssh -N -f -L 8080:127.0.0.1:8000 violet && echo 'Tunnel started on port 8080'",
+    "mcp-tunnel:stop": "kill $(pgrep -f 'ssh -N -f -L 8080') 2>/dev/null && echo 'Tunnel stopped' || echo 'No active tunnel found'",
+    "mcp-tunnel:status": "pgrep -f 'ssh -N -f -L 8080' > /dev/null && echo 'Tunnel is active' || echo 'Tunnel is stopped'"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

@@ -1,0 +1,9 @@
+{
+    "servers": {
+        "supabase": {
+            "type": "http",
+            "url": "http://localhost:8080/mcp?features=development,debugging,database,docs"
+        }
+    },
+    "inputs": []
+}
