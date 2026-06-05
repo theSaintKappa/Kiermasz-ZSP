@@ -21,6 +21,15 @@
             "recommended": true,
             "suspicious": {
                 "noUnknownAtRules": "off"
+            },
+            "nursery": {
+                "useSortedClasses": {
+                    "level": "info",
+                    "fix": "safe"
+                }
+            },
+            "a11y": {
+                "noSvgWithoutTitle": "warn"
             }
         },
         "domains": {
