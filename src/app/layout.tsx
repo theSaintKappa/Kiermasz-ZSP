@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { OnlineStatus } from "@/components/online-status";
 import { cn } from "@/lib/utils";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" });
@@ -19,6 +21,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <body className="flex min-h-full flex-col">
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                     <TooltipProvider>{children}</TooltipProvider>
+                    <Toaster richColors />
+                    <OnlineStatus />
                 </ThemeProvider>
             </body>
         </html>
