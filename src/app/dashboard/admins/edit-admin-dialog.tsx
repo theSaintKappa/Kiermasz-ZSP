@@ -1,13 +1,24 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 import { updateAdmin } from "@/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { AdminRow } from "./admins-table";
+
+const editAdminSchema = z.object({
+    firstName: z.string().trim().min(1, "Podaj imię"),
+    lastName: z.string().trim().min(1, "Podaj nazwisko"),
+    role: z.enum(["admin", "super_admin"]),
+});
+
+type EditAdminFormValues = z.infer<typeof editAdminSchema>;
 
 interface EditAdminDialogProps {
     open: boolean;
@@ -16,50 +27,56 @@ interface EditAdminDialogProps {
 }
 
 export function EditAdminDialog({ open, onOpenChange, admin }: EditAdminDialogProps) {
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [role, setRole] = useState<"admin" | "super_admin">("admin");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [serverError, setServerError] = useState<string | null>(null);
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<EditAdminFormValues>({
+        resolver: zodResolver(editAdminSchema),
+        defaultValues: {
+            firstName: "",
+            lastName: "",
+            role: "admin",
+        },
+    });
 
     useEffect(() => {
         if (admin) {
-            setFirstName(admin.firstName);
-            setLastName(admin.lastName);
-            setRole(admin.role);
+            reset({
+                firstName: admin.firstName,
+                lastName: admin.lastName,
+                role: admin.role,
+            });
         }
-    }, [admin]);
+    }, [admin, reset]);
 
     const handleOpenChange = (open: boolean) => {
         if (!open) {
-            setError(null);
+            setServerError(null);
         }
         onOpenChange(open);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!admin || !firstName.trim() || !lastName.trim()) return;
-
-        setIsSubmitting(true);
-        setError(null);
+    const onSubmit = async (data: EditAdminFormValues) => {
+        if (!admin) return;
+        setServerError(null);
 
         try {
             await updateAdmin({
                 id: admin.id,
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
-                role,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                role: data.role,
             });
             handleOpenChange(false);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Wystąpił nieznany błąd.");
-        } finally {
-            setIsSubmitting(false);
+            setServerError(err instanceof Error ? err.message : "Wystąpił nieznany błąd.");
         }
     };
-
-    const isValid = firstName.trim() && lastName.trim();
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -68,37 +85,46 @@ export function EditAdminDialog({ open, onOpenChange, admin }: EditAdminDialogPr
                     <DialogTitle>Edytuj administratora</DialogTitle>
                     <DialogDescription>Zmień dane administratora.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit}>
-                    <div className="space-y-4 py-4">
+                <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                    <FieldGroup className="py-4">
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="edit-firstName">Imię</Label>
-                                <Input id="edit-firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoFocus />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="edit-lastName">Nazwisko</Label>
-                                <Input id="edit-lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                            </div>
+                            <Field data-invalid={Boolean(errors.firstName)}>
+                                <FieldLabel htmlFor="edit-firstName">Imię</FieldLabel>
+                                <Input id="edit-firstName" autoFocus {...register("firstName")} />
+                                <FieldError errors={[errors.firstName]} />
+                            </Field>
+                            <Field data-invalid={Boolean(errors.lastName)}>
+                                <FieldLabel htmlFor="edit-lastName">Nazwisko</FieldLabel>
+                                <Input id="edit-lastName" {...register("lastName")} />
+                                <FieldError errors={[errors.lastName]} />
+                            </Field>
                         </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="edit-role">Rola</Label>
-                            <Select value={role} onValueChange={(v) => setRole(v as "admin" | "super_admin")}>
-                                <SelectTrigger id="edit-role" className="w-full">
-                                    <SelectValue>{(value: string) => (value === "admin" ? "Admin" : value === "super_admin" ? "Super Admin" : "")}</SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                    <SelectItem value="super_admin">Super Admin</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {error && <p className="text-destructive text-sm">{error}</p>}
-                    </div>
+                        <Field data-invalid={Boolean(errors.role)}>
+                            <FieldLabel htmlFor="edit-role">Rola</FieldLabel>
+                            <Controller
+                                name="role"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select value={field.value} onValueChange={field.onChange}>
+                                        <SelectTrigger id="edit-role" className="w-full">
+                                            <SelectValue>{(value: string) => (value === "admin" ? "Admin" : value === "super_admin" ? "Super Admin" : "")}</SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="admin">Admin</SelectItem>
+                                            <SelectItem value="super_admin">Super Admin</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            <FieldError errors={[errors.role]} />
+                        </Field>
+                        <FieldError>{serverError}</FieldError>
+                    </FieldGroup>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                             Anuluj
                         </Button>
-                        <Button type="submit" disabled={!isValid || isSubmitting}>
+                        <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting ? "Zapisywanie..." : "Zapisz"}
                         </Button>
                     </DialogFooter>

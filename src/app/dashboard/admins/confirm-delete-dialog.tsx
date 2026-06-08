@@ -4,6 +4,7 @@ import { useState } from "react";
 import { deleteAdmin } from "@/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useRememberedAccountsStore } from "@/stores/remembered-accounts-store";
 import type { AdminRow } from "./admins-table";
 
 interface ConfirmDeleteDialogProps {
@@ -15,6 +16,7 @@ interface ConfirmDeleteDialogProps {
 export function ConfirmDeleteDialog({ open, onOpenChange, admin }: ConfirmDeleteDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const removeAccount = useRememberedAccountsStore((s) => s.removeAccount);
 
     const handleOpenChange = (open: boolean) => {
         if (!open) {
@@ -31,6 +33,7 @@ export function ConfirmDeleteDialog({ open, onOpenChange, admin }: ConfirmDelete
 
         try {
             await deleteAdmin(admin.id);
+            removeAccount(admin.id);
             handleOpenChange(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Wystąpił nieznany błąd.");

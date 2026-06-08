@@ -57,7 +57,7 @@ export async function createAdmin(input: CreateAdminInput): Promise<CreateAdminR
         throw new Error("Nie udało się utworzyć użytkownika.");
     }
 
-    const { error: profileError } = await serviceClient.from("profiles").insert({
+    const { error: profileError } = await serviceClient.from("profiles").upsert({
         id: newUser.user.id,
         email,
         first_name: firstName,

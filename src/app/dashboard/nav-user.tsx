@@ -2,18 +2,13 @@
 import { ArrowUpDownIcon, Logout02Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/client";
+import { useRememberedAccountsStore } from "@/stores/remembered-accounts-store";
 import { useUserStore } from "@/stores/user-store";
-
-type RememberedAccount = {
-    id: string;
-    email: string;
-    name: string;
-};
 
 const getInitials = (name: string) =>
     name
@@ -32,35 +27,17 @@ export function NavUser() {
     const userName = useUserStore((s) => s.name);
     const userEmail = useUserStore((s) => s.email);
 
-    const [rememberedAccounts, setRememberedAccounts] = useState<RememberedAccount[]>([]);
+    const accounts = useRememberedAccountsStore((s) => s.accounts);
+    const addOrUpdateAccount = useRememberedAccountsStore((s) => s.addOrUpdateAccount);
 
     useEffect(() => {
         if (!userId) return;
 
         const displayName = userName || "User";
-        const email = userEmail;
+        addOrUpdateAccount(userId, userEmail, displayName);
+    }, [userId, userName, userEmail, addOrUpdateAccount]);
 
-        try {
-            const stored = localStorage.getItem("app_remembered_accounts");
-            const accounts: RememberedAccount[] = stored ? JSON.parse(stored) : [];
-
-            const existingIdx = accounts.findIndex((a) => a.id === userId);
-
-            const parts = userName.split(" ").filter(Boolean);
-            const shortName = parts.length >= 2 ? `${parts[0]} ${parts[1][0].toUpperCase()}.` : displayName;
-
-            const currentAccount: RememberedAccount = { id: userId, email, name: shortName };
-
-            if (existingIdx >= 0) accounts[existingIdx] = currentAccount;
-            else accounts.push(currentAccount);
-
-            localStorage.setItem("app_remembered_accounts", JSON.stringify(accounts));
-            setRememberedAccounts(accounts.filter((a) => a.id !== userId));
-        } catch (e) {
-            console.error("Failed to parse registry", e);
-        }
-    }, [userId, userName, userEmail]);
-
+    const otherAccounts = accounts.filter((a) => a.id !== userId);
     const initials = getInitials(userName || "User");
 
     const handleLogOut = async () => {
@@ -91,10 +68,10 @@ export function NavUser() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side={isMobile ? "bottom" : "right"} align="end" sideOffset={4}>
                         <DropdownMenuGroup>
-                            {rememberedAccounts.length > 0 && (
+                            {otherAccounts.length > 0 && (
                                 <>
                                     <DropdownMenuLabel>Przełącz konto</DropdownMenuLabel>
-                                    {rememberedAccounts.map((acc) => (
+                                    {otherAccounts.map((acc) => (
                                         <DropdownMenuItem key={acc.id} onClick={() => handleSwitchAccount(acc.email)} className="cursor-pointer gap-2 p-2">
                                             <Avatar className="size-6 rounded-lg">
                                                 <AvatarFallback className="text-xs">{getInitials(acc.name || "User")}</AvatarFallback>
