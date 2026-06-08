@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/client";
+import { useUserStore } from "@/stores/user-store";
 
 type RememberedAccount = {
     id: string;
@@ -27,42 +28,40 @@ export function NavUser() {
     const router = useRouter();
     const { isMobile } = useSidebar();
 
-    const [user, setUser] = useState({ id: "", name: "", email: "" });
+    const userId = useUserStore((s) => s.id);
+    const userName = useUserStore((s) => s.name);
+    const userEmail = useUserStore((s) => s.email);
+
     const [rememberedAccounts, setRememberedAccounts] = useState<RememberedAccount[]>([]);
 
     useEffect(() => {
-        supabase.auth.getUser().then(async ({ data }) => {
-            if (!data.user) return;
-            const { data: profile } = await supabase.from("profiles").select("first_name, last_name").eq("id", data.user.id).single();
+        if (!userId) return;
 
-            const name = profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : "User";
-            const email = data.user.email || "";
-            const id = data.user.id;
+        const displayName = userName || "User";
+        const email = userEmail;
 
-            setUser({ id, name, email });
+        try {
+            const stored = localStorage.getItem("app_remembered_accounts");
+            const accounts: RememberedAccount[] = stored ? JSON.parse(stored) : [];
 
-            try {
-                const stored = localStorage.getItem("app_remembered_accounts");
-                const accounts: RememberedAccount[] = stored ? JSON.parse(stored) : [];
+            const existingIdx = accounts.findIndex((a) => a.id === userId);
 
-                const existingIdx = accounts.findIndex((a) => a.id === id);
+            const parts = userName.split(" ").filter(Boolean);
+            const shortName = parts.length >= 2 ? `${parts[0]} ${parts[1][0].toUpperCase()}.` : displayName;
 
-                const shortName = profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name[0].toUpperCase()}.` : name;
+            const currentAccount: RememberedAccount = { id: userId, email, name: shortName };
 
-                const currentAccount: RememberedAccount = { id, email, name: shortName };
+            if (existingIdx >= 0) accounts[existingIdx] = currentAccount;
+            else accounts.push(currentAccount);
 
-                if (existingIdx >= 0) accounts[existingIdx] = currentAccount;
-                else accounts.push(currentAccount);
+            localStorage.setItem("app_remembered_accounts", JSON.stringify(accounts));
+            setRememberedAccounts(accounts.filter((a) => a.id !== userId));
+        } catch (e) {
+            console.error("Failed to parse registry", e);
+        }
+    }, [userId, userName, userEmail]);
 
-                localStorage.setItem("app_remembered_accounts", JSON.stringify(accounts));
-                setRememberedAccounts(accounts.filter((a) => a.id !== id));
-            } catch (e) {
-                console.error("Failed to parse registry", e);
-            }
-        });
-    }, [supabase]);
-
-    const initials = getInitials(user.name || "User");
+    const initials = getInitials(userName || "User");
 
     const handleLogOut = async () => {
         await supabase.auth.signOut();
@@ -85,8 +84,8 @@ export function NavUser() {
                             <AvatarFallback>{initials}</AvatarFallback>
                         </Avatar>
                         <div className="grid flex-1 text-left text-sm leading-tight">
-                            <span className="truncate font-medium">{user.name ? user.name : user.email}</span>
-                            <span className="truncate text-muted-foreground text-xs">{user.name ? user.email : ""}</span>
+                            <span className="truncate font-medium">{userName || userEmail}</span>
+                            <span className="truncate text-muted-foreground text-xs">{userName ? userEmail : ""}</span>
                         </div>
                         <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-auto size-4" />
                     </DropdownMenuTrigger>

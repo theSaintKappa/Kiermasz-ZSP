@@ -10,6 +10,7 @@ import { CreateEventDialog } from "./create-event-dialog";
 export function EventGuard({ children }: { children: React.ReactNode }) {
     const { events, selectedEventId, isLoading } = useEventStore();
     const isSuperAdmin = useUserStore((s) => s.isSuperAdmin);
+    const isUserLoading = useUserStore((s) => s.isLoading);
     const initializeEvents = useEventStore((s) => s.initialize);
     const initializeUser = useUserStore((s) => s.initialize);
     const [createOpen, setCreateOpen] = useState(false);
@@ -20,7 +21,7 @@ export function EventGuard({ children }: { children: React.ReactNode }) {
         initializeUser();
     }, []);
 
-    if (isLoading) {
+    if (isLoading || isUserLoading) {
         return (
             <div className="flex w-full flex-1 items-center justify-center">
                 <LogoShield className="size-12 animate-pulse opacity-50" />
