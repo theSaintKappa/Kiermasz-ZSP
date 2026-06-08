@@ -2,35 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, type ReactNode, useCallback, useContext, useState } from "react";
+import { create } from "zustand";
 import { BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { routeSegmentLabels } from "./nav-config";
 
 type BreadcrumbOverrides = Record<string, string>;
 
-const BreadcrumbOverrideContext = createContext<BreadcrumbOverrides>({});
-const SetBreadcrumbOverrideContext = createContext<(segment: string, label: string) => void>(() => {});
+interface BreadcrumbState {
+    overrides: BreadcrumbOverrides;
+    setLabel: (segment: string, label: string) => void;
+}
+
+const useBreadcrumbStore = create<BreadcrumbState>()((set) => ({
+    overrides: {},
+    setLabel: (segment, label) =>
+        set((state) => ({
+            overrides: { ...state.overrides, [segment]: label },
+        })),
+}));
 
 export function useBreadcrumbOverrides() {
-    return useContext(BreadcrumbOverrideContext);
+    return useBreadcrumbStore((s) => s.overrides);
 }
 
 export function useSetBreadcrumbLabel() {
-    return useContext(SetBreadcrumbOverrideContext);
-}
-
-export function BreadcrumbProvider({ children }: { children: ReactNode }) {
-    const [overrides, setOverrides] = useState<BreadcrumbOverrides>({});
-
-    const setLabel = useCallback((segment: string, label: string) => {
-        setOverrides((prev) => ({ ...prev, [segment]: label }));
-    }, []);
-
-    return (
-        <BreadcrumbOverrideContext.Provider value={overrides}>
-            <SetBreadcrumbOverrideContext.Provider value={setLabel}>{children}</SetBreadcrumbOverrideContext.Provider>
-        </BreadcrumbOverrideContext.Provider>
-    );
+    return useBreadcrumbStore((s) => s.setLabel);
 }
 
 function getSegmentLabel(segment: string, overrides: BreadcrumbOverrides): string {
