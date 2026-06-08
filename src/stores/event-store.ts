@@ -45,7 +45,10 @@ export const useEventStore = create<EventState>()(
                     let selectedEventId = state.selectedEventId;
                     if (selectedEventId && !events.some((e) => e.id === selectedEventId)) selectedEventId = null;
 
-                    if (!selectedEventId && events.length > 0) selectedEventId = events[0].id;
+                    if (!selectedEventId && events.length > 0) {
+                        const active = events.find((e) => e.status === "active");
+                        selectedEventId = active ? active.id : events[0].id;
+                    }
 
                     set({ events, selectedEventId });
 
@@ -72,7 +75,10 @@ export const useEventStore = create<EventState>()(
                     let selectedEventId = get().selectedEventId;
                     if (selectedEventId && !events.some((e) => e.id === selectedEventId)) selectedEventId = null;
 
-                    if (!selectedEventId && events.length > 0) selectedEventId = events[0].id;
+                    if (!selectedEventId && events.length > 0) {
+                        const active = events.find((e) => e.status === "active");
+                        selectedEventId = active ? active.id : events[0].id;
+                    }
 
                     set({
                         events,
