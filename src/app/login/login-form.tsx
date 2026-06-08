@@ -26,7 +26,9 @@ const getLoginErrorMessage = (error: { code?: string; message: string }) => (err
 
 export function LoginForm() {
     const router = useRouter();
-    const nextPath = useSearchParams().get("next");
+    const searchParams = useSearchParams();
+    const nextPath = searchParams.get("next");
+    const defaultEmail = searchParams.get("email") || "";
     const supabase = createClient();
     const [authError, setAuthError] = useState<string | null>(null);
     const {
@@ -35,6 +37,7 @@ export function LoginForm() {
         formState: { errors, isSubmitting },
     } = useForm<LoginFormValues>({
         resolver: zodResolver(loginFormSchema),
+        defaultValues: { email: defaultEmail },
     });
 
     const onSubmit = async ({ email, password }: LoginFormValues) => {
@@ -63,12 +66,12 @@ export function LoginForm() {
                 </div>
                 <Field data-invalid={Boolean(errors.email)}>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
-                    <Input id="email" type="email" placeholder="kowalski@example.com" autoComplete="email" aria-invalid={Boolean(errors.email)} {...register("email")} />
+                    <Input id="email" type="email" placeholder="kowalski@example.com" autoComplete="email" autoFocus={!defaultEmail} aria-invalid={Boolean(errors.email)} {...register("email")} />
                     <FieldError errors={[errors.email]} />
                 </Field>
                 <Field data-invalid={Boolean(errors.password)}>
                     <FieldLabel htmlFor="password">Hasło</FieldLabel>
-                    <Input id="password" type="password" placeholder="••••••••••" autoComplete="current-password" aria-invalid={Boolean(errors.password)} {...register("password")} />
+                    <Input id="password" type="password" placeholder="••••••••••" autoComplete="current-password" autoFocus={Boolean(defaultEmail)} aria-invalid={Boolean(errors.password)} {...register("password")} />
                     <FieldError errors={[errors.password]} />
                 </Field>
                 <FieldError>{authError}</FieldError>
