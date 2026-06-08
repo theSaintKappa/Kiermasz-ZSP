@@ -33,7 +33,7 @@ export function EventSwitcher() {
                 <SidebarMenuItem>
                     <DropdownMenu>
                         <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" />}>
-                            <LogoShield className="size-8!" />
+                            <LogoShield className="size-8! transition-transform duration-150 group-has-data-[collapsible=icon]/sidebar-wrapper:scale-70" />
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <div className="flex items-center gap-1.5">
                                     <span className="truncate font-medium">{selectedEvent?.name ?? "Brak wydarzeń"}</span>
@@ -46,7 +46,7 @@ export function EventSwitcher() {
                             </div>
                             <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-auto" />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" align="start" side={isMobile ? "bottom" : "right"} sideOffset={4}>
+                        <DropdownMenuContent className="w-60" side={isMobile ? "bottom" : "right"} sideOffset={4}>
                             <DropdownMenuGroup>
                                 <DropdownMenuLabel className="text-muted-foreground text-xs">Wydarzenia</DropdownMenuLabel>
                                 <DropdownMenuRadioGroup value={selectedEventId ?? ""} onValueChange={(v) => v && selectEvent(v)}>
