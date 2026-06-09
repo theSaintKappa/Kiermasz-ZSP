@@ -5,6 +5,7 @@ interface UserState {
     id: string;
     name: string;
     email: string;
+    role: string | null;
     isSuperAdmin: boolean;
     isLoading: boolean;
 
@@ -15,6 +16,7 @@ export const useUserStore = create<UserState>()((set) => ({
     id: "",
     name: "",
     email: "",
+    role: null,
     isSuperAdmin: false,
     isLoading: true,
 
@@ -27,7 +29,7 @@ export const useUserStore = create<UserState>()((set) => ({
             } = await supabase.auth.getUser();
 
             if (!user) {
-                set({ isSuperAdmin: false, isLoading: false });
+                set({ role: null, isSuperAdmin: false, isLoading: false });
                 return;
             }
 
@@ -42,6 +44,7 @@ export const useUserStore = create<UserState>()((set) => ({
                 id,
                 name,
                 email,
+                role: profile?.role ?? null,
                 isSuperAdmin: profile?.role === "super_admin",
                 isLoading: false,
             });

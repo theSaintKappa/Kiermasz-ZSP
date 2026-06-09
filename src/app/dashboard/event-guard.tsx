@@ -24,7 +24,7 @@ export function EventGuard({ children }: { children: React.ReactNode }) {
     if (isLoading || isUserLoading) {
         return (
             <div className="flex w-full flex-1 items-center justify-center">
-                <LogoShield className="size-12 animate-pulse opacity-50" />
+                <LogoShield className="size-14 animate-pulse opacity-75" />
             </div>
         );
     }

@@ -24,18 +24,14 @@ export async function createAdmin(input: CreateAdminInput): Promise<CreateAdminR
     const supabase = await createClient();
 
     const {
-        data: { user: caller },
+        data: { user },
     } = await supabase.auth.getUser();
 
-    if (!caller) {
-        throw new Error("Nie jesteś zalogowany.");
-    }
+    if (!user) throw new Error("Nie jesteś zalogowany.");
 
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", caller.id).maybeSingle();
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
 
-    if (profile?.role !== "super_admin") {
-        throw new Error("Tylko super administrator może dodawać nowych administratorów.");
-    }
+    if (profile?.role !== "super_admin") throw new Error("Tylko super administrator może dodawać nowych administratorów.");
 
     const serviceClient = createServiceClient();
 
@@ -49,13 +45,9 @@ export async function createAdmin(input: CreateAdminInput): Promise<CreateAdminR
         },
     });
 
-    if (createError) {
-        throw new Error(createError.message);
-    }
+    if (createError) throw new Error(createError.message);
 
-    if (!newUser.user) {
-        throw new Error("Nie udało się utworzyć użytkownika.");
-    }
+    if (!newUser.user) throw new Error("Nie udało się utworzyć użytkownika.");
 
     const { error: profileError } = await supabase.from("profiles").insert({
         id: newUser.user.id,
@@ -72,11 +64,7 @@ export async function createAdmin(input: CreateAdminInput): Promise<CreateAdminR
 
     revalidatePath("/dashboard/admins");
 
-    return {
-        success: true,
-        email,
-        password,
-    };
+    return { success: true, email, password };
 }
 
 interface UpdateAdminInput {
@@ -92,31 +80,18 @@ export async function updateAdmin(input: UpdateAdminInput): Promise<void> {
     const supabase = await createClient();
 
     const {
-        data: { user: caller },
+        data: { user },
     } = await supabase.auth.getUser();
 
-    if (!caller) {
-        throw new Error("Nie jesteś zalogowany.");
-    }
+    if (!user) throw new Error("Nie jesteś zalogowany.");
 
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", caller.id).maybeSingle();
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
 
-    if (profile?.role !== "super_admin") {
-        throw new Error("Tylko super administrator może edytować administratorów.");
-    }
+    if (profile?.role !== "super_admin") throw new Error("Tylko super administrator może edytować administratorów.");
 
-    const { error } = await supabase
-        .from("profiles")
-        .update({
-            first_name: firstName,
-            last_name: lastName,
-            role,
-        })
-        .eq("id", id);
+    const { error } = await supabase.from("profiles").update({ first_name: firstName, last_name: lastName, role }).eq("id", id);
 
-    if (error) {
-        throw new Error(error.message);
-    }
+    if (error) throw new Error(error.message);
 
     revalidatePath("/dashboard/admins");
 }
@@ -125,36 +100,26 @@ export async function deleteAdmin(id: string): Promise<void> {
     const supabase = await createClient();
 
     const {
-        data: { user: caller },
+        data: { user },
     } = await supabase.auth.getUser();
 
-    if (!caller) {
-        throw new Error("Nie jesteś zalogowany.");
-    }
+    if (!user) throw new Error("Nie jesteś zalogowany.");
 
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", caller.id).maybeSingle();
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
 
-    if (profile?.role !== "super_admin") {
-        throw new Error("Tylko super administrator może usuwać administratorów.");
-    }
+    if (profile?.role !== "super_admin") throw new Error("Tylko super administrator może usuwać administratorów.");
 
-    if (caller.id === id) {
-        throw new Error("Nie możesz usunąć swojego własnego konta.");
-    }
+    if (user.id === id) throw new Error("Nie możesz usunąć swojego własnego konta.");
 
     const { error: profileError } = await supabase.from("profiles").delete().eq("id", id);
 
-    if (profileError) {
-        throw new Error(profileError.message);
-    }
+    if (profileError) throw new Error(profileError.message);
 
     const serviceClient = createServiceClient();
 
     const { error: deleteError } = await serviceClient.auth.admin.deleteUser(id);
 
-    if (deleteError) {
-        throw new Error(deleteError.message);
-    }
+    if (deleteError) throw new Error(deleteError.message);
 
     revalidatePath("/dashboard/admins");
 }
