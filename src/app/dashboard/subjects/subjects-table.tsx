@@ -7,6 +7,7 @@ import { createSubject, createSubjects } from "@/actions/subject";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export interface SubjectRow {
@@ -22,9 +23,6 @@ interface SubjectsTableProps {
     onEdit: (subject: SubjectRow) => void;
     onDelete: (subject: SubjectRow) => void;
 }
-
-const textareaClasses =
-    "h-24 max-h-48 min-h-24 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 dark:disabled:bg-input/80";
 
 export function SubjectsTable({ subjects, isAdmin, onEdit, onDelete }: SubjectsTableProps) {
     const [name, setName] = useState("");
@@ -83,7 +81,7 @@ export function SubjectsTable({ subjects, isAdmin, onEdit, onDelete }: SubjectsT
                 <form onSubmit={handleAdd} className="flex items-end gap-2">
                     <div className="flex-1">
                         {bulkMode ? (
-                            <textarea
+                            <Textarea
                                 placeholder="Wklej listę przedmiotów, każdy w nowej linii..."
                                 value={name}
                                 onChange={(e) => {
@@ -92,7 +90,7 @@ export function SubjectsTable({ subjects, isAdmin, onEdit, onDelete }: SubjectsT
                                 }}
                                 disabled={isSubmitting}
                                 aria-invalid={Boolean(error)}
-                                className={textareaClasses}
+                                className="h-24 max-h-48 min-h-24 resize-y"
                             />
                         ) : (
                             <Input
