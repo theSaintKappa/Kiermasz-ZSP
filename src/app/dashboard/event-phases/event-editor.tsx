@@ -1,5 +1,7 @@
 "use client";
 
+import { CircleEllipsisIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -41,39 +43,41 @@ export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent }
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                {isSuperAdmin && (
-                    <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground text-sm">Status:</span>
-                        <ToggleGroup value={[event.status]} onValueChange={(v) => v[0] && setPendingStatus(v[0] as EventStatus)} variant="default">
-                            {(["planned", "active", "archived"] as EventStatus[]).map((s) => {
-                                const disabled = savingStatus || (s === "active" && hasOtherActiveEvent);
-                                if (s === "active" && hasOtherActiveEvent) {
-                                    return (
-                                        <Tooltip key={s}>
-                                            <TooltipTrigger render={<span />}>
-                                                <ToggleGroupItem value={s} disabled={disabled} className={s === event.status ? "bg-primary! text-primary-foreground!" : ""}>
-                                                    {statusLabel(s)}
-                                                </ToggleGroupItem>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Już istnieje jedno aktywne wydarzenie</TooltipContent>
-                                        </Tooltip>
-                                    );
-                                }
-                                return (
-                                    <ToggleGroupItem key={s} value={s} disabled={disabled} className={s === event.status ? "bg-primary! text-primary-foreground!" : ""}>
-                                        {statusLabel(s)}
-                                    </ToggleGroupItem>
-                                );
-                            })}
-                        </ToggleGroup>
+            {isSuperAdmin && (
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                        <HugeiconsIcon icon={CircleEllipsisIcon} strokeWidth={2} className="size-4" />
+                        <span className="font-medium text-xs">Status wydarzenia</span>
                     </div>
-                )}
-            </div>
+
+                    <ToggleGroup value={[event.status]} onValueChange={(v) => v[0] && setPendingStatus(v[0] as EventStatus)} variant="outline">
+                        {(["planned", "active", "archived"] as EventStatus[]).map((s) => {
+                            const disabled = savingStatus || (s === "active" && hasOtherActiveEvent);
+                            if (s === "active" && hasOtherActiveEvent) {
+                                return (
+                                    <Tooltip key={s}>
+                                        <TooltipTrigger render={<span />}>
+                                            <ToggleGroupItem value={s} disabled={disabled} size="sm" className={s === event.status ? "bg-primary! text-primary-foreground!" : ""}>
+                                                {statusLabel(s)}
+                                            </ToggleGroupItem>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Już istnieje jedno aktywne wydarzenie</TooltipContent>
+                                    </Tooltip>
+                                );
+                            }
+                            return (
+                                <ToggleGroupItem key={s} value={s} disabled={disabled} size="sm" className={s === event.status ? "bg-primary! text-primary-foreground!" : ""}>
+                                    {statusLabel(s)}
+                                </ToggleGroupItem>
+                            );
+                        })}
+                    </ToggleGroup>
+                </div>
+            )}
             <div className="w-full overflow-hidden rounded-md border">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-accent hover:bg-accent">
+                        <TableRow className="bg-muted/40 hover:bg-muted/40">
                             <TableHead>Faza</TableHead>
                             <TableHead>Termin</TableHead>
                             <TableHead className="sr-only">Akcje</TableHead>
@@ -81,7 +85,7 @@ export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent }
                     </TableHeader>
                     <TableBody>
                         {phases.map((phase) => (
-                            <PhaseEditor key={phase.id} phase={phase} siblings={phases} isSuperAdmin={isSuperAdmin} onSaved={refreshEvents} className="bg-muted/30" />
+                            <PhaseEditor key={phase.id} phase={phase} siblings={phases} isSuperAdmin={isSuperAdmin} onSaved={refreshEvents} className="bg-muted/10 hover:bg-muted/20" />
                         ))}
                     </TableBody>
                 </Table>

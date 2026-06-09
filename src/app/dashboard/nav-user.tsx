@@ -1,5 +1,5 @@
 "use client";
-import { ArrowUpDownIcon, Logout02Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import { Logout02Icon, PlusSignIcon, UnfoldMoreIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -64,7 +64,7 @@ export function NavUser() {
                             <span className="truncate font-medium">{userName || userEmail}</span>
                             <span className="truncate text-muted-foreground text-xs">{userName ? userEmail : ""}</span>
                         </div>
-                        <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-auto size-4" />
+                        <HugeiconsIcon icon={UnfoldMoreIcon} className="ml-auto size-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side={isMobile ? "bottom" : "right"} align="end" sideOffset={4}>
                         <DropdownMenuGroup>

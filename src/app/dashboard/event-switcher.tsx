@@ -1,6 +1,6 @@
 "use client";
 
-import { Add01Icon, ArrowUpDownIcon } from "@hugeicons/core-free-icons";
+import { Add01Icon, UnfoldMoreIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 import { LogoShield } from "@/components/logo-shield";
@@ -44,7 +44,7 @@ export function EventSwitcher() {
                                 </div>
                                 {selectedEvent && <span className="truncate text-muted-foreground text-xs">{currentPhase ? phaseLabel(currentPhase.phase) : statusLabel(selectedEvent.status)}</span>}
                             </div>
-                            <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-auto" />
+                            <HugeiconsIcon icon={UnfoldMoreIcon} className="ml-auto" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-60" side={isMobile ? "bottom" : "right"} sideOffset={4}>
                             <DropdownMenuGroup>
@@ -75,7 +75,7 @@ export function EventSwitcher() {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuGroup>
                                         <DropdownMenuItem className="cursor-pointer gap-2 p-2" onClick={() => setCreateOpen(true)}>
-                                            <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                                            <div className="flex size-6 items-center justify-center rounded-md border border-dashed">
                                                 <HugeiconsIcon icon={Add01Icon} className="size-4" />
                                             </div>
                                             <div className="font-medium text-muted-foreground">Dodaj wydarzenie</div>

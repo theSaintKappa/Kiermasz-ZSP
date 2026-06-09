@@ -122,7 +122,7 @@ export function AdminsTable({ admins, isSuperAdmin, currentUserId, onEdit, onDel
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
-                        <TableRow key={headerGroup.id} className="bg-accent hover:bg-accent">
+                        <TableRow key={headerGroup.id} className="bg-muted/50 hover:bg-muted/50">
                             {headerGroup.headers.map((header) => (
                                 <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
                             ))}
@@ -132,7 +132,7 @@ export function AdminsTable({ admins, isSuperAdmin, currentUserId, onEdit, onDel
                 <TableBody>
                     {table.getRowModel().rows.length ? (
                         table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id} className="bg-muted/30">
+                            <TableRow key={row.id} className="bg-muted/10 hover:bg-muted/20">
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                 ))}
