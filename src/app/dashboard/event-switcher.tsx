@@ -2,6 +2,7 @@
 
 import { Add01Icon, UnfoldMoreIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LogoShield } from "@/components/logo-shield";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -22,6 +23,7 @@ export function EventSwitcher() {
     const { isMobile } = useSidebar();
     const { events, selectedEventId, selectEvent } = useEventStore();
     const isSuperAdmin = useUserStore((s) => s.isSuperAdmin);
+    const router = useRouter();
     const [createOpen, setCreateOpen] = useState(false);
 
     const selectedEvent = events.find((e) => e.id === selectedEventId);
@@ -49,7 +51,15 @@ export function EventSwitcher() {
                         <DropdownMenuContent className="w-60" side={isMobile ? "bottom" : "right"} sideOffset={4}>
                             <DropdownMenuGroup>
                                 <DropdownMenuLabel className="text-muted-foreground text-xs">Wydarzenia</DropdownMenuLabel>
-                                <DropdownMenuRadioGroup value={selectedEventId ?? ""} onValueChange={(v) => v && selectEvent(v)}>
+                                <DropdownMenuRadioGroup
+                                    value={selectedEventId ?? ""}
+                                    onValueChange={(v) => {
+                                        if (v) {
+                                            selectEvent(v);
+                                            router.refresh();
+                                        }
+                                    }}
+                                >
                                     {events.map((event) => {
                                         const eventPhase = getCurrentPhase(event.phases);
                                         return (

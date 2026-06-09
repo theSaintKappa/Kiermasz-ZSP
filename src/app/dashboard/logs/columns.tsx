@@ -1,23 +1,13 @@
 "use client";
 
-import { ArrowRight01Icon, Delete02Icon, Edit03Icon, PlusSignCircleIcon } from "@hugeicons/core-free-icons";
+import { ArrowDown01Icon, ArrowRight01Icon, ArrowUp01Icon, Delete02Icon, Edit03Icon, PlusSignCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverHeader, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-
-export interface LogRow {
-    id: string;
-    adminName: string | null;
-    action: string;
-    tableName: string;
-    recordId: string | null;
-    oldValues: Record<string, unknown> | null;
-    newValues: Record<string, unknown> | null;
-    createdAt: string;
-    eventId: string | null;
-}
+import type { LogRow } from "./logs-utils";
 
 interface FieldChange {
     field: string;
@@ -85,7 +75,7 @@ function DiffPopover({ changes, action }: { changes: FieldChange[]; action: stri
                         </Badge>
                         <span className="font-mono text-muted-foreground line-through">"{formatVal(first.old)}"</span>
                         <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
-                        <span className="font-mono">"{formatVal(first.new)}"</span>
+                        <span className="font-mono text-blue-400">"{formatVal(first.new)}"</span>
                     </div>
                 )}
                 {rest > 0 && <span className="ml-0.5 whitespace-nowrap text-muted-foreground text-xs">+{rest} więcej</span>}
@@ -98,15 +88,14 @@ function DiffPopover({ changes, action }: { changes: FieldChange[]; action: stri
                     <div key={c.field} className="flex items-center gap-1 font-mono text-xs">
                         <span className="font-medium text-muted-foreground italic">{c.field}:</span>
                         {isInsert ? (
-                            <span>"{formatVal(c.new)}"</span>
+                            <span className="text-emerald-400">"{formatVal(c.new)}"</span>
                         ) : isDelete ? (
-                            <span className="line-through">"{formatVal(c.old)}"</span>
+                            <span className="text-red-400">"{formatVal(c.old)}"</span>
                         ) : (
                             <>
                                 <span className="line-through">"{formatVal(c.old)}"</span>
-                                {/* <span className="text-muted-foreground">→</span> */}
                                 <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
-                                <span>"{formatVal(c.new)}"</span>
+                                <span className="text-blue-400">"{formatVal(c.new)}"</span>
                             </>
                         )}
                     </div>
@@ -148,7 +137,7 @@ export const columns: ColumnDef<LogRow>[] = [
         cell: ({ row }) => (
             <span className="inline-flex items-center gap-1.5">
                 <Badge variant="secondary">{row.original.tableName}</Badge>
-                {row.original.eventId === null && <Badge variant="ghost">global</Badge>}
+                {row.original.eventId === null && <span className="text-xs">global</span>}
             </span>
         ),
     },
@@ -163,11 +152,18 @@ export const columns: ColumnDef<LogRow>[] = [
     },
     {
         accessorKey: "createdAt",
-        header: "Data",
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" size="sm" className="-ml-3 h-8" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                    Data
+                    {column.getIsSorted() === "desc" ? <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="size-3.5" /> : column.getIsSorted() === "asc" ? <HugeiconsIcon icon={ArrowUp01Icon} strokeWidth={2} className="size-3.5" /> : null}
+                </Button>
+            );
+        },
         cell: ({ getValue }) => {
             const value = getValue<string>();
             if (!value) return <span className="text-muted-foreground">—</span>;
-            return <span className="whitespace-nowrap text-muted-foreground text-sm">{new Date(value).toLocaleString("pl-PL", { dateStyle: "short", timeStyle: "short" })}</span>;
+            return <span className="whitespace-nowrap text-muted-foreground text-sm">{new Date(value).toLocaleString("pl-PL", { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>;
         },
     },
 ];
