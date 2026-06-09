@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { JetBrains_Mono, Outfit } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
+import { OnlineStatus } from "@/components/online-status";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { OnlineStatus } from "@/components/online-status";
 import { cn } from "@/lib/utils";
 
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" });
+const outfitSans = Outfit({ subsets: ["latin"], variable: "--font-sans" });
+const jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
     title: { template: "%s | Kiermasz ZSTiO", default: "Kiermasz ZSTiO" },
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
-        <html lang="en" className={cn("h-full antialiased", outfit.variable)} suppressHydrationWarning>
+        <html lang="en" className={cn("h-full antialiased", outfitSans.variable, jetBrainsMono.variable)} suppressHydrationWarning>
             <body className="flex min-h-full flex-col">
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                     <TooltipProvider>{children}</TooltipProvider>

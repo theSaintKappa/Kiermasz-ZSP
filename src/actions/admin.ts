@@ -57,7 +57,7 @@ export async function createAdmin(input: CreateAdminInput): Promise<CreateAdminR
         throw new Error("Nie udało się utworzyć użytkownika.");
     }
 
-    const { error: profileError } = await serviceClient.from("profiles").upsert({
+    const { error: profileError } = await supabase.from("profiles").insert({
         id: newUser.user.id,
         email,
         first_name: firstName,
@@ -105,9 +105,7 @@ export async function updateAdmin(input: UpdateAdminInput): Promise<void> {
         throw new Error("Tylko super administrator może edytować administratorów.");
     }
 
-    const serviceClient = createServiceClient();
-
-    const { error } = await serviceClient
+    const { error } = await supabase
         .from("profiles")
         .update({
             first_name: firstName,
@@ -144,13 +142,13 @@ export async function deleteAdmin(id: string): Promise<void> {
         throw new Error("Nie możesz usunąć swojego własnego konta.");
     }
 
-    const serviceClient = createServiceClient();
-
-    const { error: profileError } = await serviceClient.from("profiles").delete().eq("id", id);
+    const { error: profileError } = await supabase.from("profiles").delete().eq("id", id);
 
     if (profileError) {
         throw new Error(profileError.message);
     }
+
+    const serviceClient = createServiceClient();
 
     const { error: deleteError } = await serviceClient.auth.admin.deleteUser(id);
 
