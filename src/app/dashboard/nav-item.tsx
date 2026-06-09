@@ -13,9 +13,9 @@ export function NavItem({ title, url, icon }: { title: string; url: string; icon
     return (
         <SidebarMenuItem>
             <SidebarMenuButton tooltip={title} isActive={isActive} render={<Link href={url} />}>
-                <HugeiconsIcon icon={icon} />
+                <HugeiconsIcon strokeWidth={isActive ? 2 : 1.5} icon={icon} />
                 <span>{title}</span>
-                <HugeiconsIcon icon={ArrowRight01Icon} className="ml-auto" />
+                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={isActive ? 2.5 : 1.5} className="ml-auto" />
             </SidebarMenuButton>
         </SidebarMenuItem>
     );

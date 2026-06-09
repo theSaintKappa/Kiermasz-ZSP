@@ -9,7 +9,7 @@ export default function DashboardLayout({ children }: Readonly<{ children: React
             <DashboardSidebar />
             <SidebarInset>
                 <DashboardHeader />
-                <main className="flex flex-1 p-4">
+                <main className="flex flex-1 p-4 pt-0">
                     <EventGuard>{children}</EventGuard>
                 </main>
             </SidebarInset>

@@ -1,20 +1,30 @@
 "use client";
 
 import { ModeToggle } from "@/components/theme-toggle";
+import { Badge } from "@/components/ui/badge";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEventStore } from "@/stores/event-store";
 import { DynamicBreadcrumb } from "./breadcrumb-nav";
 
 export function DashboardHeader() {
     const selectedEventId = useEventStore((s) => s.selectedEventId);
 
+    const { open } = useSidebar();
+
     if (!selectedEventId) return null;
 
     return (
-        <header className="flex h-14 shrink-0 items-center border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-            <SidebarTrigger className="mx-2.5 group-has-data-[collapsible=icon]/sidebar-wrapper:mx-1.5" size="icon-lg" />
+        <header className="flex h-14 shrink-0 items-center transition-[width,height] ease-[cubic-bezier(0.16,1,0.3,1)] group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+            <Tooltip>
+                <TooltipTrigger render={<SidebarTrigger className="mx-2.5 group-has-data-[collapsible=icon]/sidebar-wrapper:mx-1.5" size="icon-lg" />} />
+                <TooltipContent className="flex items-center gap-1">
+                    <p>{open ? "Zwiń pasek boczny" : "Rozwiń pasek boczny"}</p>
+                    <Badge variant="secondary">⌘B</Badge>
+                </TooltipContent>
+            </Tooltip>
             <div>
                 <Separator orientation="vertical" className="h-6" />
             </div>

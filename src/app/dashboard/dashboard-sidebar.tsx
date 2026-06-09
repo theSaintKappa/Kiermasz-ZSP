@@ -11,7 +11,7 @@ export function DashboardSidebar() {
     const selectedEventId = useEventStore((s) => s.selectedEventId);
 
     return (
-        <Sidebar collapsible="icon">
+        <Sidebar collapsible="icon" variant="floating">
             <SidebarHeader>
                 <EventSwitcher />
             </SidebarHeader>
