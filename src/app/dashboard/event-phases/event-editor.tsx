@@ -1,10 +1,9 @@
 "use client";
 
-import { CircleEllipsisIcon } from "@hugeicons/core-free-icons";
+import { Alert02Icon, CircleEllipsisIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -91,20 +90,27 @@ export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent }
                 </Table>
             </div>
 
-            <Dialog open={!!pendingStatus} onOpenChange={() => setPendingStatus(null)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Zmiana statusu</DialogTitle>
-                        <DialogDescription>Czy na pewno chcesz zmienić status wydarzenia na „{pendingStatus ? statusLabel(pendingStatus) : ""}”?</DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setPendingStatus(null)}>
+            <AlertDialog open={!!pendingStatus} onOpenChange={() => setPendingStatus(null)}>
+                <AlertDialogContent size="sm">
+                    <AlertDialogHeader>
+                        <AlertDialogMedia>
+                            <HugeiconsIcon icon={Alert02Icon} />
+                        </AlertDialogMedia>
+                        <AlertDialogTitle>Zmiana statusu</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Czy na pewno chcesz zmienić status wydarzenia na "<span className="font-medium text-foreground">{pendingStatus && statusLabel(pendingStatus)}</span>"?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel variant="outline" onClick={() => setPendingStatus(null)}>
                             Anuluj
-                        </Button>
-                        <Button onClick={() => pendingStatus && handleStatusChange(pendingStatus)}>Zmień</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                        </AlertDialogCancel>
+                        <AlertDialogAction variant="destructive" onClick={() => pendingStatus && handleStatusChange(pendingStatus)} disabled={savingStatus}>
+                            Zmień
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

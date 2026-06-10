@@ -1,9 +1,10 @@
 "use client";
 
+import { Alert02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 import { deleteAdmin } from "@/actions/admin";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useRememberedAccountsStore } from "@/stores/remembered-accounts-store";
 import type { AdminRow } from "./admins-table";
 
@@ -43,28 +44,29 @@ export function ConfirmDeleteDialog({ open, onOpenChange, admin }: ConfirmDelete
     };
 
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Usuń administratora</DialogTitle>
-                    <DialogDescription>
+        <AlertDialog open={open} onOpenChange={handleOpenChange}>
+            <AlertDialogContent size="sm">
+                <AlertDialogHeader>
+                    <AlertDialogMedia>
+                        <HugeiconsIcon icon={Alert02Icon} />
+                    </AlertDialogMedia>
+                    <AlertDialogTitle>Usuń administratora</AlertDialogTitle>
+                    <AlertDialogDescription>
                         Na pewno chcesz usunąć administratora{" "}
                         <span className="font-medium text-foreground">
                             {admin?.firstName} {admin?.lastName}
                         </span>
                         ? Tej operacji nie można cofnąć.
-                    </DialogDescription>
-                </DialogHeader>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
                 {error && <p className="text-destructive text-sm">{error}</p>}
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => handleOpenChange(false)}>
-                        Anuluj
-                    </Button>
-                    <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
+                <AlertDialogFooter>
+                    <AlertDialogCancel variant="outline">Anuluj</AlertDialogCancel>
+                    <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
                         {isSubmitting ? "Usuwanie..." : "Usuń"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 }
