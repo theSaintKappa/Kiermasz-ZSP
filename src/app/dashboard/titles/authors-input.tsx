@@ -62,7 +62,7 @@ export function AuthorsInput({ value, onChange, disabled, className, "aria-inval
             data-slot="input"
             aria-invalid={ariaInvalid}
             className={cn(
-                "flex min-h-8 w-full flex-wrap items-center gap-1 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 dark:disabled:bg-input/80",
+                "flex min-h-8 w-full flex-wrap items-center gap-1 rounded-lg border border-input bg-transparent p-1 text-base transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 dark:disabled:bg-input/80",
                 className,
             )}
         >
@@ -72,7 +72,7 @@ export function AuthorsInput({ value, onChange, disabled, className, "aria-inval
                     <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="text-muted-foreground transition-colors group-hover:text-destructive group-focus:text-destructive" />
                 </Badge>
             ))}
-            <input ref={inputRef} type="text" id={id} name={name} className="flex-1 bg-transparent outline-none" placeholder={value.length === 0 && placeholder ? placeholder : undefined} onKeyDown={handleKeyDown} onPaste={handlePaste} onBlur={onBlur} disabled={disabled} {...rest} />
+            <input ref={inputRef} type="text" id={id} name={name} className="flex-1 bg-transparent px-1.5 outline-none" placeholder={value.length === 0 && placeholder ? placeholder : undefined} onKeyDown={handleKeyDown} onPaste={handlePaste} onBlur={onBlur} disabled={disabled} {...rest} />
         </div>
     );
 }

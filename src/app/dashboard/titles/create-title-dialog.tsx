@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
 import { createSubject } from "@/actions/subject";
-import { createTitle } from "@/actions/title";
+import { createTitle, updateTitle } from "@/actions/title";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,12 +18,28 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { textbookTitleFormSchema } from "@/lib/schemas";
+import { getCoverUrl } from "@/lib/storage-utils";
 import { createClient } from "@/lib/supabase/client";
 import type { EducationLevel, TextbookLookupResult } from "@/lib/textbook-utils";
 import { AuthorsInput } from "./authors-input";
 import { useBarcodeScanner } from "./use-barcode-scanner";
 
 type CreateTitleFormValues = z.infer<typeof textbookTitleFormSchema>;
+
+export interface TextbookRow {
+    id: string;
+    isbn: string;
+    title: string;
+    subtitle: string | null;
+    authors: string[];
+    publisher: string | null;
+    publishing_year: number | null;
+    subject_id: string | null;
+    subject_name: string | null;
+    level: EducationLevel;
+    cover_path: string | null;
+    created_at: string;
+}
 
 const LEVEL_LABELS: Record<EducationLevel, string> = {
     basic: "Podstawowy",
@@ -38,9 +54,14 @@ const ACCEPTED_COVER_TYPES = "image/jpeg,image/png,image/webp";
 interface CreateTitleDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    title?: TextbookRow | null;
+    onSuccess?: () => void;
+    onDelete?: () => void;
 }
 
-export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps) {
+export function CreateTitleDialog({ open, onOpenChange, title, onSuccess, onDelete }: CreateTitleDialogProps) {
+    const isEdit = !!title;
+    const existingCoverUrl = isEdit ? getCoverUrl(title.cover_path) : null;
     const [serverError, setServerError] = useState<string | null>(null);
     const [subjects, setSubjects] = useState<{ label: string; value: string }[]>([]);
     const [lookupLoading, setLookupLoading] = useState(false);
@@ -50,14 +71,27 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
     const [subjectValue, setSubjectValue] = useState("");
     const [coverFile, setCoverFile] = useState<File | null>(null);
     const [coverUrl, setCoverUrl] = useState("");
-    const [coverPreview, setCoverPreview] = useState<string | null>(null);
+    const [coverPreview, setCoverPreview] = useState<string | null>(existingCoverUrl);
+    const [coverRemoved, setCoverRemoved] = useState(false);
 
     const lookupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const coverInputRef = useRef<HTMLInputElement>(null);
 
     const form = useForm<CreateTitleFormValues>({
         resolver: zodResolver(textbookTitleFormSchema),
-        defaultValues: { isbn: "", title: "", subtitle: "", authors: [], publisher: "", publishing_year: undefined, subject_id: null, subject_name: null, level: "basic" },
+        defaultValues: isEdit
+            ? {
+                  isbn: title.isbn,
+                  title: title.title,
+                  subtitle: title.subtitle ?? "",
+                  authors: title.authors,
+                  publisher: title.publisher ?? "",
+                  publishing_year: title.publishing_year ?? undefined,
+                  subject_id: title.subject_id,
+                  subject_name: null,
+                  level: title.level,
+              }
+            : { isbn: "", title: "", subtitle: "", authors: [], publisher: "", publishing_year: undefined, subject_id: null, subject_name: null, level: "basic" },
     });
 
     const watchIsbn = form.watch("isbn");
@@ -95,12 +129,39 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
         }
     }, [watchSubjectId, watchSubjectName, subjects, subjectOpen]);
 
+    useEffect(() => {
+        if (!open) return;
+        if (isEdit && title) {
+            form.reset({
+                isbn: title.isbn,
+                title: title.title,
+                subtitle: title.subtitle ?? "",
+                authors: title.authors,
+                publisher: title.publisher ?? "",
+                publishing_year: title.publishing_year ?? undefined,
+                subject_id: title.subject_id,
+                subject_name: null,
+                level: title.level,
+            });
+            const cover = getCoverUrl(title.cover_path);
+            setCoverPreview(cover);
+            setCoverRemoved(false);
+            setCoverFile(null);
+            setCoverUrl("");
+            setSubjectValue(title.subject_name ?? "");
+            setLookupError(null);
+            setLookupResult(null);
+            setServerError(null);
+        }
+    }, [open, title, isEdit, form.reset]);
+
     const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         if (coverPreview && coverFile) URL.revokeObjectURL(coverPreview);
         setCoverFile(file);
         setCoverUrl("");
+        setCoverRemoved(false);
         setCoverPreview(URL.createObjectURL(file));
     };
 
@@ -109,6 +170,7 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
         if (coverPreview && coverFile) URL.revokeObjectURL(coverPreview);
         setCoverFile(null);
         setCoverUrl(url);
+        setCoverRemoved(false);
         setCoverPreview(url || null);
         if (coverInputRef.current) coverInputRef.current.value = "";
     };
@@ -118,23 +180,34 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
         setCoverFile(null);
         setCoverUrl("");
         setCoverPreview(null);
+        setCoverRemoved(true);
         if (coverInputRef.current) coverInputRef.current.value = "";
     };
 
     const resetAll = () => {
-        form.reset();
+        form.reset({
+            isbn: "",
+            title: "",
+            subtitle: "",
+            authors: [],
+            publisher: "",
+            publishing_year: undefined,
+            subject_id: null,
+            subject_name: null,
+            level: "basic",
+        });
         setLookupLoading(false);
         setLookupError(null);
         setLookupResult(null);
         setServerError(null);
         setSubjectOpen(false);
         setSubjectValue("");
+        setCoverRemoved(false);
         handleCoverRemove();
         void scanner.stop();
     };
 
     const handleOpenChange = (next: boolean) => {
-        if (!next) resetAll();
         onOpenChange(next);
     };
 
@@ -182,7 +255,7 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: lookupIsbn is stable and we only want to call it when ISBN changes
     useEffect(() => {
-        if (!watchIsbn) return;
+        if (!watchIsbn || isEdit) return;
         lookupIsbn(watchIsbn);
     }, [watchIsbn]);
 
@@ -198,23 +271,50 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
             }
 
             const formData = new FormData();
-            formData.append(
-                "data",
-                JSON.stringify({
-                    isbn: data.isbn,
-                    title: data.title,
-                    subtitle: data.subtitle || null,
-                    authors: data.authors?.length ? data.authors : null,
-                    publisher: data.publisher || null,
-                    publishing_year: data.publishing_year ?? null,
-                    subject_id: finalSubjectId,
-                    level: data.level,
-                }),
-            );
-            if (coverFile) formData.append("cover", coverFile);
-            else if (coverUrl) formData.append("cover_url", coverUrl);
 
-            await createTitle(formData);
+            if (isEdit && title) {
+                formData.append(
+                    "data",
+                    JSON.stringify({
+                        id: title.id,
+                        data: {
+                            title: data.title,
+                            subtitle: data.subtitle || null,
+                            authors: data.authors?.length ? data.authors : null,
+                            publisher: data.publisher || null,
+                            publishing_year: data.publishing_year ?? null,
+                            subject_id: finalSubjectId,
+                            level: data.level,
+                        },
+                    }),
+                );
+                if (coverRemoved) formData.append("cover_removed", "true");
+                else if (coverFile) formData.append("cover", coverFile);
+                else if (coverUrl) formData.append("cover_url", coverUrl);
+
+                await updateTitle(formData);
+            } else {
+                formData.append(
+                    "data",
+                    JSON.stringify({
+                        isbn: data.isbn,
+                        title: data.title,
+                        subtitle: data.subtitle || null,
+                        authors: data.authors?.length ? data.authors : null,
+                        publisher: data.publisher || null,
+                        publishing_year: data.publishing_year ?? null,
+                        subject_id: finalSubjectId,
+                        level: data.level,
+                    }),
+                );
+                if (coverFile) formData.append("cover", coverFile);
+                else if (coverUrl) formData.append("cover_url", coverUrl);
+
+                await createTitle(formData);
+                resetAll();
+            }
+
+            onSuccess?.();
             handleOpenChange(false);
         } catch (err) {
             setServerError(err instanceof Error ? err.message : "Wystąpił nieznany błąd.");
@@ -223,13 +323,13 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>Dodaj tytuł</DialogTitle>
-                    <DialogDescription>Wpisz numer ISBN/EAN, aby automatycznie uzupełnić dane.</DialogDescription>
+            <DialogContent className="p-0 sm:max-w-lg">
+                <DialogHeader className="px-4 pt-4">
+                    <DialogTitle>{isEdit ? "Edytuj tytuł" : "Dodaj tytuł"}</DialogTitle>
+                    <DialogDescription>{isEdit ? "Edytuj dane podręcznika." : "Wpisz numer ISBN/EAN, aby automatycznie uzupełnić dane."}</DialogDescription>
                 </DialogHeader>
                 <form id="create-title-form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
-                    <FieldGroup className="pb-4">
+                    <FieldGroup className="no-scrollbar max-h-[60vh] overflow-y-auto px-4 pb-4 sm:max-h-[80vh]">
                         <Controller
                             name="isbn"
                             control={form.control}
@@ -239,20 +339,22 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
                                     <div className="relative">
                                         <div className="flex gap-2">
                                             <InputGroup>
-                                                <InputGroupInput {...field} id={field.name} placeholder="np. 9788326750793" aria-invalid={fieldState.invalid} />
-                                                <InputGroupAddon align="inline-end">{lookupLoading && <HugeiconsIcon icon={Loading03Icon} className="animate-spin" />}</InputGroupAddon>
+                                                <InputGroupInput {...field} id={field.name} placeholder="np. 9788326750793" aria-invalid={fieldState.invalid} disabled={isEdit} />
+                                                {!isEdit && <InputGroupAddon align="inline-end">{lookupLoading && <HugeiconsIcon icon={Loading03Icon} className="animate-spin" />}</InputGroupAddon>}
                                             </InputGroup>
-                                            <Button
-                                                type="button"
-                                                variant={scanner.open ? "default" : "outline"}
-                                                size="icon"
-                                                onClick={() => {
-                                                    scanner.open ? void scanner.stop() : scanner.setOpen(true);
-                                                }}
-                                            >
-                                                <HugeiconsIcon icon={Camera01Icon} />
-                                                <span className="sr-only">Skanuj kod kreskowy</span>
-                                            </Button>
+                                            {!isEdit && (
+                                                <Button
+                                                    type="button"
+                                                    variant={scanner.open ? "default" : "outline"}
+                                                    size="icon"
+                                                    onClick={() => {
+                                                        scanner.open ? void scanner.stop() : scanner.setOpen(true);
+                                                    }}
+                                                >
+                                                    <HugeiconsIcon icon={Camera01Icon} />
+                                                    <span className="sr-only">Skanuj kod kreskowy</span>
+                                                </Button>
+                                            )}
                                         </div>
                                         <scanner.Viewfinder />
                                     </div>
@@ -279,7 +381,7 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
                                     <FieldLabel htmlFor={field.name}>Podtytuł</FieldLabel>
-                                    <Input {...field} id={field.name} placeholder="np. Podręcznik dla liceum i technikum" aria-invalid={fieldState.invalid} />
+                                    <Input {...field} value={field.value ?? ""} id={field.name} placeholder="np. Podręcznik dla liceum i technikum" aria-invalid={fieldState.invalid} />
                                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                                 </Field>
                             )}
@@ -290,19 +392,19 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
                                     <FieldLabel htmlFor={field.name}>Autorzy</FieldLabel>
-                                    <AuthorsInput {...field} id={field.name} placeholder="np. Adam Kowalski, Ewa Nowak" aria-invalid={fieldState.invalid} />
+                                    <AuthorsInput {...field} value={field.value ?? []} id={field.name} placeholder="np. Adam Kowalski, Ewa Nowak" aria-invalid={fieldState.invalid} />
                                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                                 </Field>
                             )}
                         />
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-9 gap-4">
                             <Controller
                                 name="publisher"
                                 control={form.control}
                                 render={({ field, fieldState }) => (
-                                    <Field className="col-span-2" data-invalid={fieldState.invalid}>
+                                    <Field className="col-span-7" data-invalid={fieldState.invalid}>
                                         <FieldLabel htmlFor={field.name}>Wydawca</FieldLabel>
-                                        <Input {...field} id={field.name} placeholder="np. Nowa Era" aria-invalid={fieldState.invalid} />
+                                        <Input {...field} value={field.value ?? ""} id={field.name} placeholder="np. Nowa Era" aria-invalid={fieldState.invalid} />
                                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                                     </Field>
                                 )}
@@ -311,7 +413,7 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
                                 name="publishing_year"
                                 control={form.control}
                                 render={({ field: { value, onChange, ...field }, fieldState }) => (
-                                    <Field data-invalid={fieldState.invalid}>
+                                    <Field className="col-span-2" data-invalid={fieldState.invalid}>
                                         <FieldLabel htmlFor={field.name}>Rok</FieldLabel>
                                         <Input
                                             {...field}
@@ -330,12 +432,12 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
                                 )}
                             />
                         </div>
-                        <div className="grid grid-cols-9 gap-3">
+                        <div className="grid grid-cols-13 gap-3">
                             <Controller
                                 name="subject_id"
                                 control={form.control}
                                 render={({ field, fieldState }) => (
-                                    <Field className="col-span-5" data-invalid={fieldState.invalid}>
+                                    <Field className="col-span-7" data-invalid={fieldState.invalid}>
                                         <FieldLabel htmlFor="subject_id">Przedmiot</FieldLabel>
                                         <Popover
                                             open={subjectOpen}
@@ -357,7 +459,7 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
                                             }}
                                         >
                                             <PopoverTrigger render={<Button id={field.name} variant="outline" role="combobox" aria-expanded={subjectOpen} className="w-full justify-between font-normal" aria-invalid={fieldState.invalid} />}>
-                                                {subjectValue ? subjects.find((s) => s.label.toLowerCase() === subjectValue.toLowerCase())?.label || subjectValue : <span className="text-muted-foreground">np. Fizyka</span>}
+                                                {subjectValue ? <span className="truncate">{subjects.find((s) => s.label.toLowerCase() === subjectValue.toLowerCase())?.label || subjectValue}</span> : <span className="text-muted-foreground">np. Fizyka</span>}
                                                 <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="pointer-events-none size-4 text-muted-foreground" />
                                             </PopoverTrigger>
                                             <PopoverContent className="w-(--anchor-width) p-0" align="start">
@@ -409,7 +511,7 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
                                 name="level"
                                 control={form.control}
                                 render={({ field, fieldState }) => (
-                                    <Field className="col-span-4" data-invalid={fieldState.invalid}>
+                                    <Field className="col-span-6" data-invalid={fieldState.invalid}>
                                         <FieldLabel htmlFor="level">Poziom nauczania</FieldLabel>
                                         <Select value={field.value} onValueChange={field.onChange}>
                                             <SelectTrigger id={field.name} className="w-full" aria-invalid={fieldState.invalid}>
@@ -483,12 +585,30 @@ export function CreateTitleDialog({ open, onOpenChange }: CreateTitleDialogProps
                         </Field>
                         {serverError && <FieldError>{serverError}</FieldError>}
                     </FieldGroup>
-                    <DialogFooter>
+                    <DialogFooter className="mx-0 mb-0">
+                        {!isEdit && (
+                            <Button type="button" variant="ghost" className="sm:mr-auto" onClick={resetAll}>
+                                Wyczyść
+                            </Button>
+                        )}
+                        {isEdit && (
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                className="sm:mr-auto"
+                                onClick={() => {
+                                    handleOpenChange(false);
+                                    onDelete?.();
+                                }}
+                            >
+                                Usuń
+                            </Button>
+                        )}
                         <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                             Anuluj
                         </Button>
                         <Button type="submit" form="create-title-form" disabled={form.formState.isSubmitting}>
-                            {form.formState.isSubmitting ? "Zapisywanie..." : "Zapisz"}
+                            {form.formState.isSubmitting ? "Zapisywanie..." : isEdit ? "Zapisz zmiany" : "Zapisz"}
                         </Button>
                     </DialogFooter>
                 </form>
