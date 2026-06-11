@@ -99,6 +99,8 @@ function extractSubtitle(fields: MarcField[]): string | null {
     raw = raw.replace(/\s*:\s*$/, "").trim();
     raw = raw.replace(/^\s*:\s*/, "").trim();
 
+    if (raw) raw = raw.charAt(0).toUpperCase() + raw.slice(1);
+
     return raw || null;
 }
 
@@ -169,13 +171,74 @@ function extractPublicationYear(fields: MarcField[], fallbackYear?: string): num
     return null;
 }
 
+const VOCATIONAL_KEYWORDS = [
+    "informatyk",
+    "komputer",
+    "programow",
+    "grafika komputerowa",
+    "grafiki komputerowej",
+    "systemy operacyjne",
+    "systemów operacyjnych",
+    "sieci komputerowe",
+    "sieci komputerowych",
+    "bazy danych",
+    "baz danych",
+    "algorytm",
+    "oprogramowanie",
+    "aplikacji",
+    "internetowych",
+    "stron internetowych",
+    "multimedia",
+    "technologia informacyjna",
+    "technologii informacyjnej",
+    "elektronik",
+    "układ",
+    "scalon",
+    "mikroprocesor",
+    "półprzewodnik",
+    "miernictwo",
+    "elektryczn",
+    "elektrotechnik",
+    "automatyk",
+    "mechatronik",
+    "robotyk",
+    "mechanik",
+    "pneumatyk",
+    "hydraulik",
+    "maszyn",
+    "konstrukcji",
+    "wytrzymałości",
+    "napęd",
+    "sensory",
+    "sterowani",
+    "digital",
+    "microcontroller",
+    "embedded",
+    "PLC",
+    "CNC",
+    "CAD",
+    "CAM",
+    "obrabiarek",
+    "spawalnictw",
+    "termodynamic",
+];
+
+function isVocationalSubject(subject: string): boolean {
+    const lower = subject.toLowerCase();
+    return VOCATIONAL_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
 function extractSubject(fields: MarcField[]): string | null {
     const f650 = findField(fields, "650");
     let subject = subfieldValue(f650, "a");
     if (!subject?.trim()) return null;
 
     subject = subject.replace(/\(przedmiot szkolny\)/gi, "").trim();
-    return subject || null;
+    if (!subject) return null;
+
+    if (isVocationalSubject(subject)) return "Przedmioty zawodowe";
+
+    return subject;
 }
 
 function extractEducationLevel(fields: MarcField[]): EducationLevel {

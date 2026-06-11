@@ -14,28 +14,25 @@ import { PhaseEditor } from "./phase-editor";
 
 export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent }: { event: { id: string; name: string; status: EventStatus }; phases: EventPhase[]; isSuperAdmin: boolean; hasOtherActiveEvent: boolean }) {
     const { refreshEvents } = useEventStore();
-    const [savingStatus, setSavingStatus] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [pendingStatus, setPendingStatus] = useState<EventStatus | null>(null);
 
     const handleStatusChange = async (status: EventStatus) => {
-        setSavingStatus(true);
+        setIsSubmitting(true);
         try {
             const supabase = createClient();
             const { error } = await supabase.from("events").update({ status }).eq("id", event.id);
 
             if (error) {
                 console.error("Failed to update event status:", error.message);
-                setSavingStatus(false);
-                setPendingStatus(null);
                 return;
             }
 
-            setSavingStatus(false);
-            setPendingStatus(null);
             await refreshEvents();
         } catch (err) {
             console.error("Error updating event status:", err);
-            setSavingStatus(false);
+        } finally {
+            setIsSubmitting(false);
             setPendingStatus(null);
         }
     };
@@ -51,7 +48,7 @@ export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent }
 
                     <ToggleGroup value={[event.status]} onValueChange={(v) => v[0] && setPendingStatus(v[0] as EventStatus)} variant="outline">
                         {(["planned", "active", "archived"] as EventStatus[]).map((s) => {
-                            const disabled = savingStatus || (s === "active" && hasOtherActiveEvent);
+                            const disabled = isSubmitting || (s === "active" && hasOtherActiveEvent);
                             if (s === "active" && hasOtherActiveEvent) {
                                 return (
                                     <Tooltip key={s}>
@@ -105,7 +102,7 @@ export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent }
                         <AlertDialogCancel variant="outline" onClick={() => setPendingStatus(null)}>
                             Anuluj
                         </AlertDialogCancel>
-                        <AlertDialogAction variant="destructive" onClick={() => pendingStatus && handleStatusChange(pendingStatus)} disabled={savingStatus}>
+                        <AlertDialogAction variant="destructive" onClick={() => pendingStatus && handleStatusChange(pendingStatus)} disabled={isSubmitting}>
                             Zmień
                         </AlertDialogAction>
                     </AlertDialogFooter>

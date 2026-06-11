@@ -12,16 +12,17 @@ async function requireAuth() {
     return supabase;
 }
 
-export async function createSubject(name: string): Promise<void> {
+export async function createSubject(name: string): Promise<{ id: string }> {
     const trimmed = name.trim();
     if (!trimmed) throw new Error("Nazwa przedmiotu nie może być pusta.");
 
     const supabase = await requireAuth();
 
-    const { error } = await supabase.from("subjects").insert({ name: trimmed });
+    const { data, error } = await supabase.from("subjects").insert({ name: trimmed }).select("id").single();
     if (error) throw new Error(error.message);
 
     revalidatePath("/dashboard/subjects");
+    return { id: data.id };
 }
 
 export async function createSubjects(names: string[]): Promise<void> {

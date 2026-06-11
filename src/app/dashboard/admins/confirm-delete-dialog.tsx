@@ -20,9 +20,7 @@ export function ConfirmDeleteDialog({ open, onOpenChange, admin }: ConfirmDelete
     const removeAccount = useRememberedAccountsStore((s) => s.removeAccount);
 
     const handleOpenChange = (open: boolean) => {
-        if (!open) {
-            setError(null);
-        }
+        if (!open) setError(null);
         onOpenChange(open);
     };
 

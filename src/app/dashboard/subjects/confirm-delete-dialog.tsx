@@ -4,8 +4,7 @@ import { Alert02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 import { deleteSubject } from "@/actions/subject";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { SubjectRow } from "./subjects-table";
 
 interface ConfirmDeleteDialogProps {
@@ -19,9 +18,7 @@ export function ConfirmDeleteDialog({ open, onOpenChange, subject }: ConfirmDele
     const [error, setError] = useState<string | null>(null);
 
     const handleOpenChange = (open: boolean) => {
-        if (!open) {
-            setError(null);
-        }
+        if (!open) setError(null);
         onOpenChange(open);
     };
 
@@ -42,36 +39,36 @@ export function ConfirmDeleteDialog({ open, onOpenChange, subject }: ConfirmDele
     };
 
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Usuń przedmiot</DialogTitle>
-                    <DialogDescription>
-                        Na pewno chcesz usunąć przedmiot <span className="font-medium text-foreground">{subject?.name}</span>?
-                    </DialogDescription>
-                </DialogHeader>
+        <AlertDialog open={open} onOpenChange={handleOpenChange}>
+            <AlertDialogContent size="sm">
+                <AlertDialogHeader>
+                    <AlertDialogMedia>
+                        <HugeiconsIcon icon={Alert02Icon} />
+                    </AlertDialogMedia>
+                    <AlertDialogTitle>Usuń przedmiot</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        <p>
+                            Na pewno chcesz usunąć przedmiot <span className="font-medium text-foreground">{subject?.name}</span>?
+                        </p>
+                        <p>Tej operacji nie można cofnąć.</p>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
                 {subject && subject.textbookCount > 0 && (
-                    <div className="flex items-start gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-3">
-                        <HugeiconsIcon icon={Alert02Icon} className="mt-0.5 size-5 shrink-0 text-destructive" strokeWidth={2} />
-                        <div className="space-y-1 text-sm">
-                            <p className="font-semibold text-destructive">
-                                Uwaga — {subject.textbookCount} {subject.textbookCount === 1 ? "podręcznik odwołuje się" : subject.textbookCount < 5 ? "podręczniki odwołują się" : "podręczników odwołuje się"} do tego przedmiotu.
-                            </p>
-                            <p className="text-muted-foreground">Po usunięciu przedmiotu pole „przedmiot” w {subject.textbookCount === 1 ? "tym tytule" : "tych tytułach"} zostanie wyczyszczone (ustawione jako brak).</p>
-                        </div>
+                    <div className="flex flex-col gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-center text-sm">
+                        <p className="font-semibold text-destructive">
+                            {subject.textbookCount} {subject.textbookCount === 1 ? "podręcznik odwołuje się" : subject.textbookCount < 5 ? "podręczniki odwołują się" : "podręczników odwołuje się"} do tego przedmiotu.
+                        </p>
+                        <p className="text-muted-foreground">Po usunięciu przedmiotu pole "przedmiot" w {subject.textbookCount === 1 ? "tym tytule" : "tych tytułach"} zostanie wyczyszczone.</p>
                     </div>
                 )}
-                <p className="text-muted-foreground text-sm">Tej operacji nie można cofnąć.</p>
                 {error && <p className="text-destructive text-sm">{error}</p>}
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => handleOpenChange(false)}>
-                        Anuluj
-                    </Button>
-                    <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
+                <AlertDialogFooter>
+                    <AlertDialogCancel variant="outline">Anuluj</AlertDialogCancel>
+                    <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
                         {isSubmitting ? "Usuwanie..." : "Usuń"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 }
