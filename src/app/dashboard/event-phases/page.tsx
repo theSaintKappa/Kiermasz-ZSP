@@ -23,10 +23,11 @@ export default function EventsPage() {
     const sortedPhases = [...selectedEvent.phases].sort((a, b) => phaseOrder.indexOf(a.phase) - phaseOrder.indexOf(b.phase));
 
     const hasOtherActiveEvent = events.some((e) => e.id !== selectedEvent.id && e.status === "active");
+    const hasOtherPlannedEvent = events.some((e) => e.id !== selectedEvent.id && e.status === "planned");
 
     return (
         <div className="flex w-full flex-col gap-6">
-            <EventEditor event={selectedEvent} phases={sortedPhases} isSuperAdmin={isSuperAdmin} hasOtherActiveEvent={hasOtherActiveEvent} />
+            <EventEditor event={selectedEvent} phases={sortedPhases} isSuperAdmin={isSuperAdmin} hasOtherActiveEvent={hasOtherActiveEvent} hasOtherPlannedEvent={hasOtherPlannedEvent} />
         </div>
     );
 }

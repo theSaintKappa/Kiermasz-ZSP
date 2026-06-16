@@ -49,15 +49,9 @@ export function ConfirmDeleteDialog({ open, onOpenChange, textbook, onDeleted }:
                     </AlertDialogMedia>
                     <AlertDialogTitle>Usuń tytuł</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Na pewno chcesz usunąć podręcznik{" "}
-                        <span className="font-medium text-foreground">{textbook?.title}</span>
-                        {textbook?.isbn && (
-                            <>
-                                {" "}
-                                (<span className="font-medium text-foreground">{textbook.isbn}</span>)
-                            </>
-                        )}
-                        ? Tej operacji nie można cofnąć.
+                        Na pewno chcesz usunąć podręcznik <span className="font-medium text-foreground">{textbook?.title}</span> (<span className="font-medium text-foreground">{textbook?.isbn}</span>)?
+                        <br />
+                        Tej operacji nie można cofnąć.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 {error && <p className="text-destructive text-sm">{error}</p>}

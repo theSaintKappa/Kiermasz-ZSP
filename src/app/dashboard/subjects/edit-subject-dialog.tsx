@@ -47,6 +47,7 @@ export function EditSubjectDialog({ open, onOpenChange, subject }: EditSubjectDi
     const handleOpenChange = (open: boolean) => {
         if (!open) {
             setServerError(null);
+            reset();
         }
         onOpenChange(open);
     };

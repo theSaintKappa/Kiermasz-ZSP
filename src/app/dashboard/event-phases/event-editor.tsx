@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useEventStore } from "@/stores/event-store";
 import { PhaseEditor } from "./phase-editor";
 
-export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent }: { event: { id: string; name: string; status: EventStatus }; phases: EventPhase[]; isSuperAdmin: boolean; hasOtherActiveEvent: boolean }) {
+export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent, hasOtherPlannedEvent }: { event: { id: string; name: string; status: EventStatus }; phases: EventPhase[]; isSuperAdmin: boolean; hasOtherActiveEvent: boolean; hasOtherPlannedEvent: boolean }) {
     const { refreshEvents } = useEventStore();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [pendingStatus, setPendingStatus] = useState<EventStatus | null>(null);
@@ -48,7 +48,7 @@ export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent }
 
                     <ToggleGroup value={[event.status]} onValueChange={(v) => v[0] && setPendingStatus(v[0] as EventStatus)} variant="outline">
                         {(["planned", "active", "archived"] as EventStatus[]).map((s) => {
-                            const disabled = isSubmitting || (s === "active" && hasOtherActiveEvent);
+                            const disabled = isSubmitting || (s === "active" && hasOtherActiveEvent) || (s === "planned" && hasOtherPlannedEvent);
                             if (s === "active" && hasOtherActiveEvent) {
                                 return (
                                     <Tooltip key={s}>
@@ -58,6 +58,18 @@ export function EventEditor({ event, phases, isSuperAdmin, hasOtherActiveEvent }
                                             </ToggleGroupItem>
                                         </TooltipTrigger>
                                         <TooltipContent>Już istnieje jedno aktywne wydarzenie</TooltipContent>
+                                    </Tooltip>
+                                );
+                            }
+                            if (s === "planned" && hasOtherPlannedEvent) {
+                                return (
+                                    <Tooltip key={s}>
+                                        <TooltipTrigger render={<span />}>
+                                            <ToggleGroupItem value={s} disabled={disabled} size="sm" className={s === event.status ? "bg-primary! text-primary-foreground!" : ""}>
+                                                {statusLabel(s)}
+                                            </ToggleGroupItem>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Już istnieje jedno zaplanowane wydarzenie</TooltipContent>
                                     </Tooltip>
                                 );
                             }

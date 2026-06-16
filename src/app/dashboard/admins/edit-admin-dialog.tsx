@@ -57,6 +57,7 @@ export function EditAdminDialog({ open, onOpenChange, admin }: EditAdminDialogPr
     const handleOpenChange = (open: boolean) => {
         if (!open) {
             setServerError(null);
+            reset();
         }
         onOpenChange(open);
     };

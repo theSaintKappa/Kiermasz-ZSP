@@ -18,6 +18,15 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
     const [error, setError] = useState<string | null>(null);
     const { refreshEvents, selectEvent } = useEventStore();
 
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            setName("");
+            setError(null);
+            setIsSubmitting(false);
+        }
+        onOpenChange(open);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
@@ -42,7 +51,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Nowe wydarzenie</DialogTitle>

@@ -47,10 +47,8 @@ export function ConfirmDeleteDialog({ open, onOpenChange, subject }: ConfirmDele
                     </AlertDialogMedia>
                     <AlertDialogTitle>Usuń przedmiot</AlertDialogTitle>
                     <AlertDialogDescription>
-                        <p>
-                            Na pewno chcesz usunąć przedmiot <span className="font-medium text-foreground">{subject?.name}</span>?
-                        </p>
-                        <p>Tej operacji nie można cofnąć.</p>
+                        Na pewno chcesz usunąć przedmiot <span className="font-medium text-foreground">{subject?.name}</span>?<br />
+                        Tej operacji nie można cofnąć.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 {subject && subject.textbookCount > 0 && (
