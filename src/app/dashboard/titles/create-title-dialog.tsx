@@ -55,7 +55,7 @@ interface CreateTitleDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     title?: TextbookRow | null;
-    onSuccess?: () => void;
+    onSuccess?: (id?: string) => void;
     onDelete?: () => void;
 }
 
@@ -238,7 +238,7 @@ export function CreateTitleDialog({ open, onOpenChange, title, onSuccess, onDele
                 form.setValue("isbn", cleaned);
                 form.setValue("title", data.title);
                 form.setValue("subtitle", data.subtitle ?? "");
-                form.setValue("authors", data.authors);
+                form.setValue("authors", [...new Set(data.authors as string[])]);
                 form.setValue("publisher", data.publisher ?? "");
                 form.setValue("publishing_year", data.publication_year ?? null);
                 form.setValue("level", data.education_level ?? "basic");
@@ -293,6 +293,8 @@ export function CreateTitleDialog({ open, onOpenChange, title, onSuccess, onDele
                 else if (coverUrl) formData.append("cover_url", coverUrl);
 
                 await updateTitle(formData);
+                resetAll();
+                onSuccess?.();
             } else {
                 formData.append(
                     "data",
@@ -310,11 +312,10 @@ export function CreateTitleDialog({ open, onOpenChange, title, onSuccess, onDele
                 if (coverFile) formData.append("cover", coverFile);
                 else if (coverUrl) formData.append("cover_url", coverUrl);
 
-                await createTitle(formData);
+                const result = await createTitle(formData);
                 resetAll();
+                onSuccess?.(result.id);
             }
-
-            onSuccess?.();
             handleOpenChange(false);
         } catch (err) {
             setServerError(err instanceof Error ? err.message : "Wystąpił nieznany błąd.");

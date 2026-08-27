@@ -13,10 +13,10 @@ function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
     return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
 }
 
-function PopoverContent({ className, align = "center", alignOffset = 0, side = "bottom", sideOffset = 4, ...props }: PopoverPrimitive.Popup.Props & Pick<PopoverPrimitive.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset">) {
+function PopoverContent({ className, align = "center", alignOffset = 0, side = "bottom", sideOffset = 4, anchor, ...props }: PopoverPrimitive.Popup.Props & Pick<PopoverPrimitive.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset" | "anchor">) {
     return (
         <PopoverPrimitive.Portal>
-            <PopoverPrimitive.Positioner align={align} alignOffset={alignOffset} side={side} sideOffset={sideOffset} className="isolate z-50">
+            <PopoverPrimitive.Positioner anchor={anchor} align={align} alignOffset={alignOffset} side={side} sideOffset={sideOffset} className="isolate z-50">
                 <PopoverPrimitive.Popup
                     data-slot="popover-content"
                     className={cn(

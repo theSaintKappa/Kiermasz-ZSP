@@ -47,7 +47,10 @@ export function DynamicBreadcrumb() {
             {segments.map((segment, index) => {
                 const isLast = index === segments.length - 1;
                 const label = getSegmentLabel(segment, overrides);
+                const isPending = isLast && !overrides[segment] && !routeSegmentLabels[segment];
                 const href = `/${segments.slice(0, index + 1).join("/")}`;
+
+                if (isPending) return null;
 
                 return (
                     <span key={segment} className="flex items-center gap-2">

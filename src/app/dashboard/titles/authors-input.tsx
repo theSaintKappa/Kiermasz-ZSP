@@ -66,7 +66,7 @@ export function AuthorsInput({ value, onChange, disabled, className, "aria-inval
                 className,
             )}
         >
-            {value.map((name) => (
+            {[...new Set(value)].map((name) => (
                 <Badge key={name} variant="outline" className="group flex items-center gap-1" render={<button type="button" onClick={() => remove(name)} />}>
                     {name}
                     <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="text-muted-foreground transition-colors group-hover:text-destructive group-focus:text-destructive" />

@@ -8,7 +8,7 @@
         },
         "supabase": {
             "type": "remote",
-            "url": "http://localhost:8080/mcp?features=development,debugging,database,docs",
+            "url": "http://localhost:8080/mcp",
             "enabled": true
         }
     }

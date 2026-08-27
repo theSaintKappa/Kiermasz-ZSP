@@ -5,7 +5,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getCoverUrl } from "@/lib/storage-utils";
 import { cn } from "@/lib/utils";
 import type { TextbookRow } from "./create-title-dialog";
@@ -97,16 +96,8 @@ export function TextbookCard({ textbook, onEdit }: TextbookCardProps) {
             </div>
 
             <div className="flex flex-1 flex-col gap-0.5 p-2.5">
-                <Tooltip>
-                    <TooltipTrigger render={<span className={cn("font-medium text-sm leading-snug", !textbook.subtitle && "line-clamp-2")}>{textbook.title}</span>} />
-                    <TooltipContent>{textbook.title}</TooltipContent>
-                </Tooltip>
-                {textbook.subtitle && (
-                    <Tooltip>
-                        <TooltipTrigger render={<span className="line-clamp-2 text-muted-foreground text-xs leading-snug">{textbook.subtitle}</span>} />
-                        <TooltipContent>{textbook.subtitle}</TooltipContent>
-                    </Tooltip>
-                )}
+                <span className={cn("font-medium text-sm leading-snug", !textbook.subtitle && "line-clamp-2")}>{textbook.title}</span>
+                {textbook.subtitle && <span className="line-clamp-2 text-muted-foreground text-xs leading-snug">{textbook.subtitle}</span>}
             </div>
         </div>
     );
