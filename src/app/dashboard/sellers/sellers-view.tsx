@@ -8,17 +8,16 @@ import { createClient } from "@/lib/supabase/client";
 import { SellerProfile } from "./[id]/seller-profile";
 import { CreateSellerDialog } from "./create-seller-dialog";
 import { SellersList } from "./sellers-list";
-import type { SellerRow, TextbookItemRow, TextbookTitleOption } from "./sellers-utils";
+import type { SellerRow, TextbookItemRow } from "./sellers-utils";
 
 interface SellersViewProps {
     sellers: SellerRow[];
     seller: SellerRow | null;
     items: TextbookItemRow[];
-    textbookTitles: TextbookTitleOption[];
     eventId: string | null;
 }
 
-export function SellersView({ sellers, seller, items, textbookTitles, eventId }: SellersViewProps) {
+export function SellersView({ sellers, seller, items, eventId }: SellersViewProps) {
     const router = useRouter();
     const isMobile = useIsMobile(1024);
     const [createOpen, setCreateOpen] = useState(false);
@@ -40,7 +39,7 @@ export function SellersView({ sellers, seller, items, textbookTitles, eventId }:
         if (seller) {
             return (
                 <div className="w-full min-w-0">
-                    <SellerProfile seller={seller} items={items} textbookTitles={textbookTitles} showBackButton />
+                    <SellerProfile seller={seller} items={items} showBackButton />
                 </div>
             );
         }
@@ -58,7 +57,7 @@ export function SellersView({ sellers, seller, items, textbookTitles, eventId }:
                 <SellersList sellers={sellers} onAddClick={() => setCreateOpen(true)} activeSellerId={seller?.id ?? null} />
             </div>
             <Separator orientation="vertical" className="h-full" />
-            <div className="min-w-0 flex-1">{seller ? <SellerProfile seller={seller} items={items} textbookTitles={textbookTitles} /> : <EmptyState />}</div>
+            <div className="min-w-0 flex-1">{seller ? <SellerProfile seller={seller} items={items} /> : <EmptyState />}</div>
             <CreateSellerDialog open={createOpen} onOpenChange={setCreateOpen} />
         </div>
     );

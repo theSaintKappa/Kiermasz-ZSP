@@ -25,7 +25,7 @@ export const navGroups: NavGroup[] = [
     },
     {
         id: "transactions",
-        label: "Transakcje",
+        label: "Sprzedaż",
         items: [
             { title: "Sprzedaż", url: "/dashboard/sales", icon: MoneyReceive02Icon },
             { title: "Rezerwacje", url: "/dashboard/reservations", icon: HoldLocked01Icon },

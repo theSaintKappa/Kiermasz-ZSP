@@ -17,7 +17,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { getCoverUrl } from "@/lib/storage-utils";
 import { useSetBreadcrumbLabel } from "../../breadcrumb-nav";
 import { CreateTitleDialog } from "../../titles/create-title-dialog";
-import { type SellerRow, statusLabel, statusVariant, type TextbookItemRow, type TextbookTitleOption } from "../sellers-utils";
+import { type SellerRow, statusLabel, statusVariant, type TextbookItemRow } from "../sellers-utils";
 import { AddTextbookItem } from "./add-textbook-item";
 import { ConfirmDeleteSellerDialog } from "./confirm-delete-seller-dialog";
 import { ConfirmDeleteTextbookItemDialog } from "./confirm-delete-textbook-item-dialog";
@@ -27,11 +27,10 @@ import { EditTextbookItemDialog } from "./edit-textbook-item-dialog";
 interface SellerProfileProps {
     seller: SellerRow;
     items: TextbookItemRow[];
-    textbookTitles: TextbookTitleOption[];
     showBackButton?: boolean;
 }
 
-export function SellerProfile({ seller, items, textbookTitles, showBackButton }: SellerProfileProps) {
+export function SellerProfile({ seller, items, showBackButton }: SellerProfileProps) {
     const router = useRouter();
     const setLabel = useSetBreadcrumbLabel();
     const [notes, setNotes] = useState(seller.notes ?? "");
@@ -124,7 +123,7 @@ export function SellerProfile({ seller, items, textbookTitles, showBackButton }:
             {/* Add textbook */}
             <div>
                 <h3 className="mb-3 font-medium text-sm">Dodaj podręcznik</h3>
-                <AddTextbookItem sellerId={seller.id} textbookTitles={textbookTitles} onCreateTitle={() => setCreateTitleOpen(true)} selectedTitleId={selectedTitleId} onTitleSelect={setSelectedTitleId} />
+                <AddTextbookItem sellerId={seller.id} onCreateTitle={() => setCreateTitleOpen(true)} selectedTitleId={selectedTitleId} onTitleSelect={setSelectedTitleId} />
             </div>
 
             {/* Textbook items list */}

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { SellerRow, TextbookItemRow, TextbookTitleOption } from "../sellers-utils";
+import type { SellerRow, TextbookItemRow } from "../sellers-utils";
 import { SellersView } from "../sellers-view";
 
 export const metadata: Metadata = {
@@ -19,10 +19,9 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
     const cookieStore = await cookies();
     const eventId = cookieStore.get("x-event-id")?.value;
 
-    const [{ data: seller }, { data: sellers }, { data: titles }] = await Promise.all([
+    const [{ data: seller }, { data: sellers }] = await Promise.all([
         supabase.from("sellers").select("*, textbook_items(*, textbook_titles(title, subtitle, isbn, publisher, publishing_year, cover_path, subjects(name)))").eq("id", id).order("created_at", { foreignTable: "textbook_items", ascending: false }).single(),
         eventId ? supabase.from("sellers").select("*, textbook_items(count)").eq("event_id", eventId).order("created_at", { ascending: false }) : Promise.resolve({ data: [] }),
-        supabase.from("textbook_titles").select("id, title, subtitle, isbn, publisher, publishing_year, cover_path, subjects(name)").order("title"),
     ]);
 
     if (!seller) notFound();
@@ -65,16 +64,5 @@ export default async function SellerProfilePage({ params }: SellerProfilePagePro
         itemCount: s.textbook_items?.[0]?.count ?? 0,
     }));
 
-    const textbookTitles: TextbookTitleOption[] = (titles ?? []).map((t) => ({
-        id: t.id,
-        title: t.title,
-        subtitle: t.subtitle,
-        isbn: t.isbn,
-        publisher: t.publisher,
-        publishingYear: t.publishing_year,
-        subjectName: (t.subjects as unknown as { name: string } | null)?.name ?? null,
-        coverPath: t.cover_path,
-    }));
-
-    return <SellersView sellers={sellerRows} seller={sellerRow} items={items} textbookTitles={textbookTitles} eventId={eventId ?? null} />;
+    return <SellersView sellers={sellerRows} seller={sellerRow} items={items} eventId={eventId ?? null} />;
 }
