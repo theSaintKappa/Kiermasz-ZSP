@@ -217,6 +217,7 @@ export function AddTextbookItem({ sellerId, onAdded, onCreateTitle, selectedTitl
                                 <InputGroup>
                                     <InputGroupInput
                                         {...field}
+                                        className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                         ref={priceInputRef}
                                         type="number"
                                         step="1"
