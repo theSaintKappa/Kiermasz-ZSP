@@ -30,13 +30,6 @@ function formatDate(iso: string) {
     });
 }
 
-function formatIsbn(isbn: string) {
-    const d = isbn.replace(/\D/g, "");
-    if (d.length === 13) return `${d.slice(0, 3)}-${d.slice(3, 4)}-${d.slice(4, 7)}-${d.slice(7, 12)}-${d.slice(12)}`;
-    if (d.length === 10) return `${d.slice(0, 1)}-${d.slice(1, 4)}-${d.slice(4, 9)}-${d.slice(9)}`;
-    return isbn;
-}
-
 export function TextbookCard({ textbook, onEdit }: TextbookCardProps) {
     const authorsText = textbook.authors?.length ? textbook.authors.join(", ") : null;
     const coverUrl = getCoverUrl(textbook.cover_path);
@@ -64,7 +57,7 @@ export function TextbookCard({ textbook, onEdit }: TextbookCardProps) {
                         </Badge>
                         <div className="flex items-center gap-1 text-white text-xs">
                             <div className="text-[10px] text-white/80 uppercase tracking-wider">ISBN</div>
-                            <div>{formatIsbn(textbook.isbn)}</div>
+                            <div>{textbook.isbn}</div>
                         </div>
                         {authorsText && (
                             <div className="mt-1.5 space-y-0.5 text-white text-xs">
