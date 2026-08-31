@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircleIcon, Cancel01Icon, CryingIcon, Loading03Icon, Search01Icon } from "@hugeicons/core-free-icons";
+import { AiSearch02Icon, AlertCircleIcon, Cancel01Icon, CryingIcon, Loading03Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -94,7 +94,7 @@ export function SalesView({ initialQuery }: SalesViewProps) {
             <InputGroup className="h-12">
                 <InputGroupInput ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nazwisko, klasa, tytuł, przedmiot lub ISBN…" className="text-base!" autoFocus />
                 <InputGroupAddon>
-                    <HugeiconsIcon icon={Search01Icon} />
+                    <HugeiconsIcon icon={AiSearch02Icon} />
                 </InputGroupAddon>
                 {query && (
                     <InputGroupAddon align="inline-end">
