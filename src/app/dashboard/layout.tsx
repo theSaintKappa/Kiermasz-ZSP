@@ -1,4 +1,5 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { CartBubble } from "./cart/cart-bubble";
 import { DashboardHeader } from "./dashboard-header";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { EventGuard } from "./event-guard";
@@ -13,6 +14,7 @@ export default function DashboardLayout({ children }: Readonly<{ children: React
                     <EventGuard>{children}</EventGuard>
                 </main>
             </SidebarInset>
+            <CartBubble />
         </SidebarProvider>
     );
 }
