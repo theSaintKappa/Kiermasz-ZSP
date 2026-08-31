@@ -140,12 +140,19 @@ function cleanAuthorName(raw: string): string {
     return name;
 }
 
+const PUBLISHER_ALIASES: Record<string, string> = {
+    "gdańskie wydawnictwo oświatowe": "GWO",
+};
+
 function extractPublisher(fields: MarcField[]): string | null {
     const f260 = findField(fields, "260");
     const publisher = subfieldValue(f260, "b");
     if (!publisher?.trim()) return null;
 
-    return publisher.replace(/[,.\s]+$/, "").trim() || null;
+    const cleaned = publisher.replace(/[,.\s]+$/, "").trim();
+    if (!cleaned) return null;
+
+    return PUBLISHER_ALIASES[cleaned.toLowerCase()] ?? cleaned;
 }
 
 function extractPublicationYear(fields: MarcField[], fallbackYear?: string): number | null {
