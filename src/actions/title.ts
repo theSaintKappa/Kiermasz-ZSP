@@ -148,6 +148,11 @@ export async function deleteTitle(id: string): Promise<void> {
     } = await supabase.auth.getUser();
     if (!user) throw new Error("Nie jesteś zalogowany.");
 
+    const { count } = await supabase.from("textbook_items").select("id", { count: "exact", head: true }).eq("title_id", id);
+    if (count && count > 0) {
+        throw new Error("Nie można usunąć tytułu, który ma przypisane egzemplarze. Usuń je najpierw.");
+    }
+
     const { error } = await supabase.from("textbook_titles").delete().eq("id", id);
     if (error) throw new Error(error.message);
 

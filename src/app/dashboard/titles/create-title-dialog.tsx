@@ -39,6 +39,7 @@ export interface TextbookRow {
     level: EducationLevel;
     cover_path: string | null;
     created_at: string;
+    itemCount: number;
 }
 
 const LEVEL_LABELS: Record<EducationLevel, string> = {

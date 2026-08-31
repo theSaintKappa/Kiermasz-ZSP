@@ -49,15 +49,31 @@ export function ConfirmDeleteDialog({ open, onOpenChange, textbook, onDeleted }:
                     </AlertDialogMedia>
                     <AlertDialogTitle>Usuń tytuł</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Na pewno chcesz usunąć podręcznik <span className="font-medium text-foreground">{textbook?.title}</span> (<span className="font-medium text-foreground">{textbook?.isbn}</span>)?
+                        {/* Na pewno chcesz usunąć podręcznik <span className="font-medium text-foreground">{textbook?.title}</span> (<span className="font-medium text-foreground">{textbook?.isbn}</span>)?
                         <br />
-                        Tej operacji nie można cofnąć.
+                        Tej operacji nie można cofnąć. */}
+                        Czy na pewno chcesz usunąć tytuł
+                        <br />
+                        <span className="font-medium text-foreground">
+                            {textbook?.title}
+                            {textbook?.subtitle ? ` — ${textbook.subtitle}` : ""}
+                        </span>
+                        ?<br />
+                        <span className="font-bold">Tej operacji nie można cofnąć.</span>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
+                {textbook && textbook.itemCount > 0 && (
+                    <div className="flex flex-col gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-center text-sm">
+                        <p className="font-semibold text-destructive">
+                            {textbook.itemCount} {textbook.itemCount === 1 ? "egzemplarz" : textbook.itemCount < 5 ? "egzemplarze" : "egzemplarzy"} tego tytułu {textbook.itemCount === 1 ? "istnieje" : "istnieją"}.
+                        </p>
+                        <p className="text-muted-foreground">Usuń je najpierw, zanim usuniesz tytuł.</p>
+                    </div>
+                )}
                 {error && <p className="text-destructive text-sm">{error}</p>}
                 <AlertDialogFooter>
                     <AlertDialogCancel variant="outline">Anuluj</AlertDialogCancel>
-                    <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
+                    <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={isSubmitting || (textbook?.itemCount ?? 0) > 0}>
                         {isSubmitting ? "Usuwanie..." : "Usuń"}
                     </AlertDialogAction>
                 </AlertDialogFooter>
