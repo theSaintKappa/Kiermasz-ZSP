@@ -1,7 +1,9 @@
 "use client";
 
-import { AlertCircleIcon, Cancel01Icon, Delete02Icon, HoldLocked01Icon, Loading03Icon, ShoppingCart01Icon } from "@hugeicons/core-free-icons";
+import { AlertCircleIcon, BarcodeIcon, BookImageIcon, BookUserIcon, Building06Icon, CalendarMortarboardIcon, Cancel01Icon, CheckmarkCircle02Icon, Delete02Icon, HoldLocked01Icon, ShoppingCart01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { completeSale, verifyCartItems } from "@/actions/sale";
@@ -9,10 +11,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getCurrentPhase } from "@/lib/event-utils";
 import { formatPrice } from "@/lib/format-utils";
+import { getCoverUrl } from "@/lib/storage-utils";
+import { cn } from "@/lib/utils";
 import { cartTotal, useCartStore } from "@/stores/cart-store";
 import { useEventStore } from "@/stores/event-store";
+import { LEVEL_SHORT_LABELS } from "../sales/sales-utils";
+import { CheckoutStrip } from "./checkout-strip";
 import { ReservationSuccessDialog } from "./reservation-success-dialog";
 import { ReserveDialog } from "./reserve-dialog";
 
@@ -33,6 +40,7 @@ export function CartBubble() {
     const [isSelling, setIsSelling] = useState(false);
     const [reserveOpen, setReserveOpen] = useState(false);
     const [successData, setSuccessData] = useState<{ number: string; expiresOn: string } | null>(null);
+    const [checkoutMode, setCheckoutMode] = useState(false);
 
     const currentPhase = event ? getCurrentPhase(event.phases) : null;
     const isSellingPhase = currentPhase?.phase === "selling";
@@ -101,6 +109,7 @@ export function CartBubble() {
                 const total = cartTotal(items);
                 clear();
                 setOpen(false);
+                setCheckoutMode(false);
                 toast.success(`Sprzedano ${items.length} ${items.length === 1 ? "podręcznik" : "podręczniki"} — ${formatPrice(total)}`);
             }
         } catch (err) {
@@ -125,7 +134,13 @@ export function CartBubble() {
 
     return (
         <>
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover
+                open={open}
+                onOpenChange={(v) => {
+                    setOpen(v);
+                    if (!v) setCheckoutMode(false);
+                }}
+            >
                 <PopoverTrigger className="fixed right-4 bottom-4 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-colors hover:bg-primary/80">
                     <HugeiconsIcon icon={ShoppingCart01Icon} className="size-7" strokeWidth={1.75} />
                     {count > 0 && (
@@ -134,7 +149,7 @@ export function CartBubble() {
                         </Badge>
                     )}
                 </PopoverTrigger>
-                <PopoverContent side="top" align="end" sideOffset={8} className="w-104 max-w-[calc(100vw-2rem)] p-0">
+                <PopoverContent side="top" align="end" sideOffset={8} className="w-134 max-w-[calc(100vw-2rem)] p-0">
                     <div className="flex flex-col">
                         {/* Header */}
                         <div className="flex items-center justify-between border-b px-4 py-3">
@@ -167,19 +182,71 @@ export function CartBubble() {
                             <div className="max-h-[40vh] divide-y overflow-y-auto">
                                 {items.map((item) => {
                                     const isConflict = conflictIds.includes(item.itemId);
+                                    const coverUrl = getCoverUrl(item.coverPath);
                                     return (
-                                        <div key={item.itemId} className={`flex items-center gap-2 px-4 py-2 ${isConflict ? "bg-destructive/5" : ""}`}>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm">{item.title}</p>
-                                                <p className="truncate text-muted-foreground text-xs">
-                                                    {item.sellerLastName} {item.sellerFirstName} · {item.classSymbol}
-                                                </p>
-                                                {isConflict && <p className="text-destructive text-xs">Niedostępny</p>}
+                                        <div key={item.itemId} className={cn("flex items-center gap-2.5 px-4 py-2", isConflict && "bg-destructive/5")}>
+                                            {/* Cover */}
+                                            <div className="aspect-210/297 h-14">
+                                                {coverUrl ? (
+                                                    <Image src={coverUrl} alt={item.title} width={64} height={88} className="size-full shrink-0 rounded object-cover" />
+                                                ) : (
+                                                    <div className="flex size-full shrink-0 items-center justify-center rounded border border-dashed bg-muted">
+                                                        <HugeiconsIcon icon={BookImageIcon} className="size-5 text-muted-foreground/40" />
+                                                    </div>
+                                                )}
                                             </div>
+
+                                            {/* Info */}
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="truncate text-sm">{item.title}</span>
+                                                    {item.level !== "basic" && (
+                                                        <Badge variant="secondary" className="shrink-0 text-[10px]">
+                                                            {LEVEL_SHORT_LABELS[item.level]}
+                                                        </Badge>
+                                                    )}
+                                                    {isConflict && (
+                                                        <Badge variant="destructive" className="shrink-0 text-[10px]">
+                                                            Niedostępny
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                {item.subtitle && <p className="truncate text-muted-foreground text-xs">{item.subtitle}</p>}
+                                                <div className="flex flex-wrap items-center gap-x-2 text-muted-foreground text-xs">
+                                                    {item.publisher && (
+                                                        <span className="flex items-center gap-0.5">
+                                                            <HugeiconsIcon className="size-2.5" icon={Building06Icon} />
+                                                            {item.publisher}
+                                                        </span>
+                                                    )}
+                                                    {item.publishingYear && (
+                                                        <span className="flex items-center gap-0.5">
+                                                            <HugeiconsIcon className="size-2.5" icon={CalendarMortarboardIcon} />
+                                                            {item.publishingYear}
+                                                        </span>
+                                                    )}
+                                                    {item.isbn && (
+                                                        <span className="flex items-center gap-0.5 font-mono">
+                                                            <HugeiconsIcon className="size-2.5" icon={BarcodeIcon} />
+                                                            {item.isbn}
+                                                        </span>
+                                                    )}
+                                                    <Link href={`/dashboard/sellers/${item.sellerId}`} className="flex items-center gap-0.5 font-medium hover:underline">
+                                                        <HugeiconsIcon className="size-2.5" icon={BookUserIcon} />
+                                                        {item.sellerFirstName} {item.sellerLastName}
+                                                        <span className="text-muted-foreground">{item.classSymbol}</span>
+                                                    </Link>
+                                                </div>
+                                            </div>
+
+                                            {/* Price + remove */}
                                             <span className="shrink-0 font-medium text-sm">{formatPrice(item.price)}</span>
-                                            <Button size="icon-sm" variant="ghost" onClick={() => removeItem(item.itemId)}>
-                                                <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />
-                                            </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger render={<Button size="icon-sm" variant="ghost" onClick={() => removeItem(item.itemId)} />}>
+                                                    <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>Usuń z koszyka</TooltipContent>
+                                            </Tooltip>
                                         </div>
                                     );
                                 })}
@@ -190,28 +257,33 @@ export function CartBubble() {
                         {count > 0 && (
                             <>
                                 <Separator />
-                                <div className="flex flex-col gap-2 p-3">
-                                    <Button className="w-full" onClick={handleSell} disabled={isSelling || hasConflicts}>
-                                        {isSelling ? (
-                                            <>
-                                                <HugeiconsIcon icon={Loading03Icon} className="animate-spin" />
-                                                Sprzedawanie…
-                                            </>
-                                        ) : (
-                                            "Sprzedaj"
-                                        )}
-                                    </Button>
-                                    <div className="flex gap-2">
-                                        <Button variant="secondary" className="flex-1" onClick={() => setReserveOpen(true)} disabled={hasConflicts}>
-                                            <HugeiconsIcon icon={HoldLocked01Icon} />
-                                            Zarezerwuj
+                                {checkoutMode ? (
+                                    <CheckoutStrip total={total} isSelling={isSelling} hasConflicts={hasConflicts} onConfirm={handleSell} onBack={() => setCheckoutMode(false)} />
+                                ) : (
+                                    <div className="flex flex-col gap-2 p-3">
+                                        <Button className="w-full" onClick={() => setCheckoutMode(true)} disabled={hasConflicts}>
+                                            <HugeiconsIcon icon={CheckmarkCircle02Icon} />
+                                            Sprzedaj
                                         </Button>
-                                        <Button variant="ghost" className="text-destructive" onClick={clear}>
-                                            <HugeiconsIcon icon={Delete02Icon} />
-                                            Wyczyść
-                                        </Button>
+                                        <div className="flex gap-2">
+                                            <Button variant="secondary" className="flex-1" onClick={() => setReserveOpen(true)} disabled={hasConflicts}>
+                                                <HugeiconsIcon icon={HoldLocked01Icon} />
+                                                Zarezerwuj
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                className="text-destructive"
+                                                onClick={() => {
+                                                    clear();
+                                                    setCheckoutMode(false);
+                                                }}
+                                            >
+                                                <HugeiconsIcon icon={Delete02Icon} />
+                                                Wyczyść
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </>
                         )}
                     </div>

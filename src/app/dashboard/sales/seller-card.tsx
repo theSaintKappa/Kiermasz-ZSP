@@ -36,6 +36,7 @@ export function SellerCard({ group }: SellerCardProps) {
             publisher: item.publisher,
             publishingYear: item.publishingYear,
             subjectName: item.subjectName,
+            coverPath: item.coverPath,
         };
         addItem(cartItem);
     };

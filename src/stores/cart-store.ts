@@ -17,6 +17,7 @@ export interface CartItem {
     publisher: string | null;
     publishingYear: number | null;
     subjectName: string | null;
+    coverPath: string | null;
 }
 
 interface CartState {
