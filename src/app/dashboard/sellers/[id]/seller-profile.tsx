@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupTextarea } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatPrice } from "@/lib/format-utils";
 import { getCoverUrl } from "@/lib/storage-utils";
 import { useSetBreadcrumbLabel } from "../../breadcrumb-nav";
 import { CreateTitleDialog } from "../../titles/create-title-dialog";
@@ -182,7 +183,7 @@ export function SellerProfile({ seller, items, showBackButton }: SellerProfilePr
                                         </div>
                                     </div>
                                     <div className="ml-3 flex items-center gap-2">
-                                        <span className="shrink-0 font-medium text-base">{item.price} zł</span>
+                                        <span className="shrink-0 font-medium text-base">{formatPrice(item.price)}</span>
                                         <div className="flex flex-col gap-1 sm:flex-row">
                                             <Tooltip>
                                                 <TooltipTrigger render={<Button variant="outline" size="icon-xs" onClick={() => setEditItem(item)} />}>

@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { TextbookItemRow } from "../sellers-utils";
 
 const editItemSchema = z.object({
-    price: z.number().positive("Cena musi być większa od zera"),
+    price: z.number().int("Cena musi być liczbą całkowitą").positive("Cena musi być większa od zera"),
     notes: z.string().optional(),
 });
 
@@ -94,7 +94,7 @@ export function EditTextbookItemDialog({ open, onOpenChange, item }: EditTextboo
                                             {...field}
                                             id="edit-price"
                                             type="number"
-                                            step="0.01"
+                                            step="1"
                                             min="0"
                                             autoFocus
                                             value={value ?? ""}

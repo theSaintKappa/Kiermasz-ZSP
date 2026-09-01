@@ -19,7 +19,7 @@ import type { TextbookTitleOption } from "../sellers-utils";
 
 const addItemSchema = z.object({
     titleId: z.string().min(1, "Wybierz podręcznik"),
-    price: z.number({ error: "Podaj cenę" }).positive("Cena musi być większa od zera"),
+    price: z.number({ error: "Podaj cenę" }).int("Cena musi być liczbą całkowitą").positive("Cena musi być większa od zera"),
 });
 
 type AddItemFormValues = z.infer<typeof addItemSchema>;

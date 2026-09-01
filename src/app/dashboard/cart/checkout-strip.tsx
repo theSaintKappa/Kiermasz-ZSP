@@ -18,7 +18,7 @@ function parseAmount(s: string): number | null {
 }
 
 function toPaymentString(n: number): string {
-    return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(".", ",");
+    return String(n);
 }
 
 interface CheckoutStripProps {
@@ -38,7 +38,7 @@ export function CheckoutStrip({ total, isSelling, hasConflicts, onConfirm, onBac
     }, []);
 
     const paid = parseAmount(payment);
-    const change = paid !== null ? Math.round((paid - total) * 100) / 100 : null;
+    const change = paid !== null ? paid - total : null;
     const underpaid = change !== null && change < 0;
     const canConfirm = !isSelling && !hasConflicts && !underpaid;
 
@@ -63,7 +63,7 @@ export function CheckoutStrip({ total, isSelling, hasConflicts, onConfirm, onBac
                             if (e.key === "Enter" && canConfirm) onConfirm();
                             if (e.key === "Escape") onBack();
                         }}
-                        inputMode="decimal"
+                        inputMode="numeric"
                         placeholder="0"
                         aria-label="Kwota otrzymana od klienta"
                     />
