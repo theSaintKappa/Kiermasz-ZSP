@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Outfit } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
-import "./globals.css";
 import { OnlineStatus } from "@/components/online-status";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import "./globals.css";
 
 const outfitSans = Outfit({ subsets: ["latin"], variable: "--font-sans" });
 const jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-    title: { template: "%s | Kiermasz ZSTiO", default: "Kiermasz ZSTiO" },
-    description: 'Oficjalny kiermasz książek ZSTiO "Mechanik". Sprzedawaj i kupuj podręczniki szkolne znacznie taniej niż w księgarniach. Szybko, lokalnie i w 100% bez prowizji i opłat. Od uczniów dla uczniów.',
-    keywords: ["kiermasz", "książki", "podręczniki", "ZSTiO", "Mechanik", "sprzedawaj", "kupuj", "taniej", "szybko", "lokalnie", "bez prowizji"],
+    title: { template: "%s | Kiermasz ZSP", default: "Kiermasz ZSP" },
+    description: 'Oficjalny kiermasz książek ZSP "Mechanik". Sprzedawaj i kupuj podręczniki szkolne znacznie taniej niż w księgarniach. Szybko, lokalnie i w 100% bez prowizji i opłat. Od uczniów dla uczniów.',
+    keywords: ["kiermasz", "książki", "podręczniki", "ZSP", "ZSTiO", "Mechanik", "Tarnowskie Góry", "UCZĘSIĘWTG", "sprzedawaj", "kupuj", "taniej", "szybko", "lokalnie", "bez prowizji"],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
