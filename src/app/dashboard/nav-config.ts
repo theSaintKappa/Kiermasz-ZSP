@@ -1,4 +1,4 @@
-import { AddTeamIcon, AlmsIcon, Book02Icon, Calendar02Icon, ChartIcon, HoldLocked01Icon, MoneyReceive02Icon, PencilRulerIcon, Scroll01Icon, UserShield01Icon } from "@hugeicons/core-free-icons";
+import { AddTeamIcon, AlmsIcon, Book02Icon, Calendar02Icon, ChartIcon, HoldLocked01Icon, MoneyReceive02Icon, PencilRulerIcon, PolicyIcon, Scroll01Icon, UserShield01Icon } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 
 export type NavItem = {
@@ -43,6 +43,7 @@ export const navGroups: NavGroup[] = [
             { title: "Statystyki", url: "/dashboard/stats", icon: ChartIcon },
             { title: "Administratorzy", url: "/dashboard/admins", icon: UserShield01Icon },
             { title: "Kalendarz faz", url: "/dashboard/event-phases", icon: Calendar02Icon },
+            { title: "Regulamin", url: "/dashboard/terms", icon: PolicyIcon },
             { title: "Dziennik zdarzeń", url: "/dashboard/logs", icon: Scroll01Icon },
         ],
     },

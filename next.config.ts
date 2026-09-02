@@ -1,6 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    async redirects() {
+        return [
+            {
+                source: "/",
+                destination: "/terms",
+                permanent: false,
+            },
+            {
+                source: "/regulamin",
+                destination: "/terms",
+                permanent: false,
+            },
+        ];
+    },
     images: {
         remotePatterns: [
             {
@@ -12,6 +26,7 @@ const nextConfig: NextConfig = {
         ],
     },
     reactCompiler: true,
+    output: "standalone",
 };
 
 export default nextConfig;
