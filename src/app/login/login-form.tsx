@@ -1,11 +1,11 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -58,9 +58,9 @@ export function LoginForm() {
     return (
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <FieldGroup>
-                <div className="flex flex-col items-center gap-5 text-center">
+                <div className="flex flex-col items-center gap-4 text-center">
                     <Link href="/">
-                        <Logo className="h-20 sm:h-22" />
+                        <Image src="/logo.svg" alt="Logo" width={100} height={100} className="h-24 w-auto sm:h-28 dark:invert" />
                     </Link>
                     <h1 className="font-bold text-2xl sm:text-3xl">Panel Administracyjny</h1>
                 </div>

@@ -2,9 +2,9 @@
 
 import { Add01Icon, UnfoldMoreIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { LogoShield } from "@/components/logo-shield";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { type EventStatus, getCurrentPhase, phaseLabel, statusLabel } from "@/lib/event-utils";
@@ -35,7 +35,7 @@ export function EventSwitcher() {
                 <SidebarMenuItem>
                     <DropdownMenu>
                         <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" />}>
-                            <LogoShield className="size-8! transition-transform duration-150 group-has-data-[collapsible=icon]/sidebar-wrapper:scale-70" />
+                            <Image src="/school_emblem_small.png" alt="Logo" width={48} height={48} className="size-8 transition-transform duration-150 group-has-data-[collapsible=icon]/sidebar-wrapper:scale-70" />
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <div className="flex items-center gap-1.5">
                                     <span className="truncate font-medium">{selectedEvent?.name ?? "Brak wydarzeń"}</span>
@@ -64,7 +64,7 @@ export function EventSwitcher() {
                                         const eventPhase = getCurrentPhase(event.phases);
                                         return (
                                             <DropdownMenuRadioItem key={event.id} value={event.id} className="gap-2 p-2">
-                                                <LogoShield className="size-8!" />
+                                                <Image src="/school_emblem_small.png" alt="Logo" width={48} height={48} className="size-8" />
                                                 <div className="grid flex-1 text-left">
                                                     <div className="flex items-center gap-1.5">
                                                         <span className="truncate text-sm">{event.name}</span>
