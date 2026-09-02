@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import type { SellerRow } from "../sellers-utils";
+import type { SellerRow } from "../inventory-utils";
 
 const editSellerSchema = z.object({
     firstName: z.string().trim().min(1, "Podaj imię"),

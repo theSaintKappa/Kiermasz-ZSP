@@ -231,7 +231,7 @@ export function CartBubble() {
                                                             {item.isbn}
                                                         </span>
                                                     )}
-                                                    <Link href={`/dashboard/sellers/${item.sellerId}`} className="flex items-center gap-0.5 font-medium hover:underline">
+                                                    <Link href={`/dashboard/inventory/${item.sellerId}`} className="flex items-center gap-0.5 font-medium hover:underline">
                                                         <HugeiconsIcon className="size-2.5" icon={BookUserIcon} />
                                                         {item.sellerFirstName} {item.sellerLastName}
                                                         <span className="text-muted-foreground">{item.classSymbol}</span>

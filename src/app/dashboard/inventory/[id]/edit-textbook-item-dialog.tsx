@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { Textarea } from "@/components/ui/textarea";
-import type { TextbookItemRow } from "../sellers-utils";
+import type { TextbookItemRow } from "../inventory-utils";
 
 const editItemSchema = z.object({
     price: z.number().int("Cena musi być liczbą całkowitą").positive("Cena musi być większa od zera"),

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { SellerRow, TextbookItemRow } from "../sellers-utils";
-import { SellersView } from "../sellers-view";
+import type { SellerRow, TextbookItemRow } from "../inventory-utils";
+import { SellersView } from "../inventory-view";
 
 export const metadata: Metadata = {
     title: "Sprzedawca — Panel",

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { filterSellers, type SellerRow } from "./sellers-utils";
+import { filterSellers, type SellerRow } from "./inventory-utils";
 
 interface SellersListProps {
     sellers: SellerRow[];
@@ -46,7 +46,7 @@ export function SellersList({ sellers, onAddClick, activeSellerId }: SellersList
                     <SidebarMenu>
                         {filtered.map((seller) => (
                             <SidebarMenuItem key={seller.id}>
-                                <SidebarMenuButton isActive={activeSellerId === seller.id} onClick={() => router.push(`/dashboard/sellers/${seller.id}`)}>
+                                <SidebarMenuButton isActive={activeSellerId === seller.id} onClick={() => router.push(`/dashboard/inventory/${seller.id}`)}>
                                     <span className="truncate">
                                         {seller.firstName} {seller.lastName}
                                         <span className="ml-1.5 text-muted-foreground text-xs">{seller.classSymbol}</span>

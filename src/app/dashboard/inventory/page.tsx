@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getPageTitle } from "../nav-config";
-import type { SellerRow } from "./sellers-utils";
-import { SellersView } from "./sellers-view";
+import type { SellerRow } from "./inventory-utils";
+import { SellersView } from "./inventory-view";
 
 export const metadata: Metadata = {
-    title: getPageTitle("sellers"),
+    title: getPageTitle("inventory"),
 };
 
 export default async function SellersPage() {

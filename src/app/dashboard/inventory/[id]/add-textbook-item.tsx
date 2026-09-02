@@ -15,7 +15,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useTextbookSearch } from "@/hooks/use-textbook-search";
 import { getCoverUrl } from "@/lib/storage-utils";
-import type { TextbookTitleOption } from "../sellers-utils";
+import type { TextbookTitleOption } from "../inventory-utils";
 
 const addItemSchema = z.object({
     titleId: z.string().min(1, "Wybierz podręcznik"),

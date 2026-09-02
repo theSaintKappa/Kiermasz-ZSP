@@ -7,8 +7,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { createClient } from "@/lib/supabase/client";
 import { SellerProfile } from "./[id]/seller-profile";
 import { CreateSellerDialog } from "./create-seller-dialog";
+import type { SellerRow, TextbookItemRow } from "./inventory-utils";
 import { SellersList } from "./sellers-list";
-import type { SellerRow, TextbookItemRow } from "./sellers-utils";
 
 interface SellersViewProps {
     sellers: SellerRow[];

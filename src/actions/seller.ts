@@ -44,7 +44,7 @@ export async function createSeller(input: CreateSellerInput): Promise<{ id: stri
 
     if (error) throw new Error(error.message);
 
-    revalidatePath("/dashboard/sellers");
+    revalidatePath("/dashboard/inventory");
     return { id: data.id };
 }
 
@@ -70,7 +70,7 @@ export async function updateSeller(input: UpdateSellerInput): Promise<void> {
 
     if (error) throw new Error(error.message);
 
-    revalidatePath("/dashboard/sellers");
+    revalidatePath("/dashboard/inventory");
 }
 
 export async function updateSellerNotes(id: string, notes: string): Promise<void> {
@@ -83,7 +83,7 @@ export async function updateSellerNotes(id: string, notes: string): Promise<void
 
     if (error) throw new Error(error.message);
 
-    revalidatePath("/dashboard/sellers");
+    revalidatePath("/dashboard/inventory");
 }
 
 export async function deleteSeller(id: string): Promise<void> {
@@ -93,7 +93,7 @@ export async function deleteSeller(id: string): Promise<void> {
 
     if (error) throw new Error(error.message);
 
-    revalidatePath("/dashboard/sellers");
+    revalidatePath("/dashboard/inventory");
 }
 
 // ── Textbook Items ───────────────────────────────────────────────────────────
@@ -114,7 +114,7 @@ export async function createTextbookItem(input: CreateTextbookItemInput): Promis
 
     if (error) throw new Error(error.message);
 
-    revalidatePath("/dashboard/sellers");
+    revalidatePath("/dashboard/inventory");
     return { id: data.id };
 }
 
@@ -136,7 +136,7 @@ export async function updateTextbookItem(input: UpdateTextbookItemInput): Promis
 
     if (error) throw new Error(error.message);
 
-    revalidatePath("/dashboard/sellers");
+    revalidatePath("/dashboard/inventory");
 }
 
 export async function deleteTextbookItem(id: string): Promise<void> {
@@ -146,5 +146,5 @@ export async function deleteTextbookItem(id: string): Promise<void> {
 
     if (error) throw new Error(error.message);
 
-    revalidatePath("/dashboard/sellers");
+    revalidatePath("/dashboard/inventory");
 }

@@ -45,7 +45,7 @@ export function SellerCard({ group }: SellerCardProps) {
         <div className="mb-3 flex break-inside-avoid flex-col rounded-lg border bg-card">
             {/* Seller header */}
             <div className="flex items-center gap-2 border-b px-3 py-2">
-                <Link href={`/dashboard/sellers/${group.sellerId}`} className="truncate font-medium text-sm hover:underline">
+                <Link href={`/dashboard/inventory/${group.sellerId}`} className="truncate font-medium text-sm hover:underline">
                     {group.firstName} {group.lastName}
                 </Link>
                 <span className="shrink-0 text-muted-foreground text-xs">{group.classSymbol}</span>

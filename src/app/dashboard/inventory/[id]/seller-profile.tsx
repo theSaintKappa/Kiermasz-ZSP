@@ -18,7 +18,7 @@ import { formatPrice } from "@/lib/format-utils";
 import { getCoverUrl } from "@/lib/storage-utils";
 import { useSetBreadcrumbLabel } from "../../breadcrumb-nav";
 import { CreateTitleDialog } from "../../titles/create-title-dialog";
-import { type SellerRow, statusLabel, statusVariant, type TextbookItemRow } from "../sellers-utils";
+import { type SellerRow, statusLabel, statusVariant, type TextbookItemRow } from "../inventory-utils";
 import { AddTextbookItem } from "./add-textbook-item";
 import { ConfirmDeleteSellerDialog } from "./confirm-delete-seller-dialog";
 import { ConfirmDeleteTextbookItemDialog } from "./confirm-delete-textbook-item-dialog";
@@ -70,7 +70,7 @@ export function SellerProfile({ seller, items, showBackButton }: SellerProfilePr
     return (
         <div className="flex flex-col gap-4">
             {showBackButton && (
-                <Button variant="link" className="w-fit p-0" nativeButton={false} render={<Link href="/dashboard/sellers" />}>
+                <Button variant="link" className="w-fit p-0" nativeButton={false} render={<Link href="/dashboard/inventory" />}>
                     <HugeiconsIcon icon={ArrowLeft02Icon} strokeWidth={2} />
                     Wróć do listy
                 </Button>
@@ -212,7 +212,7 @@ export function SellerProfile({ seller, items, showBackButton }: SellerProfilePr
 
             {/* Dialogs */}
             <EditSellerDialog open={editSellerOpen} onOpenChange={setEditSellerOpen} seller={seller} />
-            <ConfirmDeleteSellerDialog open={deleteSellerOpen} onOpenChange={setDeleteSellerOpen} seller={seller} onDeleted={() => router.push("/dashboard/sellers")} />
+            <ConfirmDeleteSellerDialog open={deleteSellerOpen} onOpenChange={setDeleteSellerOpen} seller={seller} onDeleted={() => router.push("/dashboard/inventory")} />
             <EditTextbookItemDialog
                 open={!!editItem}
                 onOpenChange={(open) => {

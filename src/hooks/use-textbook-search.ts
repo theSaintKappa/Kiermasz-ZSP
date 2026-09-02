@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { TextbookTitleOption } from "@/app/dashboard/sellers/sellers-utils";
+import type { TextbookTitleOption } from "@/app/dashboard/inventory/inventory-utils";
 
 const ISBN_PATTERN = /^\d{10,13}$/;
 const DEBOUNCE_MS = 300;

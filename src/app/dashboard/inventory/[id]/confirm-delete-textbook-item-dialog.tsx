@@ -3,18 +3,17 @@
 import { Alert02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
-import { deleteSeller } from "@/actions/seller";
+import { deleteTextbookItem } from "@/actions/seller";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import type { SellerRow } from "../sellers-utils";
+import type { TextbookItemRow } from "../inventory-utils";
 
-interface ConfirmDeleteSellerDialogProps {
+interface ConfirmDeleteTextbookItemDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    seller: SellerRow | null;
-    onDeleted?: () => void;
+    item: TextbookItemRow | null;
 }
 
-export function ConfirmDeleteSellerDialog({ open, onOpenChange, seller, onDeleted }: ConfirmDeleteSellerDialogProps) {
+export function ConfirmDeleteTextbookItemDialog({ open, onOpenChange, item }: ConfirmDeleteTextbookItemDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,13 +23,12 @@ export function ConfirmDeleteSellerDialog({ open, onOpenChange, seller, onDelete
     };
 
     const handleDelete = async () => {
-        if (!seller) return;
+        if (!item) return;
         setIsSubmitting(true);
         setError(null);
         try {
-            await deleteSeller(seller.id);
+            await deleteTextbookItem(item.id);
             handleOpenChange(false);
-            onDeleted?.();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Wystąpił nieznany błąd.");
         } finally {
@@ -45,17 +43,16 @@ export function ConfirmDeleteSellerDialog({ open, onOpenChange, seller, onDelete
                     <AlertDialogMedia>
                         <HugeiconsIcon icon={Alert02Icon} />
                     </AlertDialogMedia>
-                    <AlertDialogTitle>Usuń profil</AlertDialogTitle>
+                    <AlertDialogTitle>Usuń podręcznik</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Czy na pewno chcesz usunąć sprzedawcę
+                        Czy na pewno chcesz usunąć
                         <br />
                         <span className="font-medium text-foreground">
-                            {seller?.firstName} {seller?.lastName} {seller?.classSymbol && `(${seller.classSymbol})`}
+                            {item?.title}
+                            {item?.subtitle ? ` — ${item.subtitle}` : ""}
                         </span>
                         ?<br />
-                        Wszystkie przypisane podręczniki również zostaną usunięte.
-                        <br />
-                        <span className="font-bold">Tej operacji nie można cofnąć</span>.
+                        <span className="font-bold">Tej operacji nie można cofnąć.</span>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 {error && <p className="text-destructive text-sm">{error}</p>}
