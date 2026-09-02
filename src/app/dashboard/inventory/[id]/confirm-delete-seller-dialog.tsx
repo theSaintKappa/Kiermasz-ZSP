@@ -53,15 +53,21 @@ export function ConfirmDeleteSellerDialog({ open, onOpenChange, seller, onDelete
                             {seller?.firstName} {seller?.lastName} {seller?.classSymbol && `(${seller.classSymbol})`}
                         </span>
                         ?<br />
-                        Wszystkie przypisane podręczniki również zostaną usunięte.
-                        <br />
                         <span className="font-bold">Tej operacji nie można cofnąć</span>.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
+                {seller && seller.itemCount > 0 && (
+                    <div className="flex flex-col gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-center text-sm">
+                        <p className="font-semibold text-destructive">
+                            Ten sprzedawca ma {seller.itemCount === 1 ? "przypisany" : "przypisane"} {seller.itemCount} {seller.itemCount === 1 ? "podręcznik" : seller.itemCount < 5 ? "podręczniki" : "podręczników"}.
+                        </p>
+                        <p className="text-muted-foreground">Usuń je najpierw, zanim usuniesz profil sprzedawcy.</p>
+                    </div>
+                )}
                 {error && <p className="text-destructive text-sm">{error}</p>}
                 <AlertDialogFooter>
                     <AlertDialogCancel variant="outline">Anuluj</AlertDialogCancel>
-                    <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
+                    <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={isSubmitting || (seller?.itemCount ?? 0) > 0}>
                         {isSubmitting ? "Usuwanie..." : "Usuń"}
                     </AlertDialogAction>
                 </AlertDialogFooter>

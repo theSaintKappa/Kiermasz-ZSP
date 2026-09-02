@@ -89,6 +89,11 @@ export async function updateSellerNotes(id: string, notes: string): Promise<void
 export async function deleteSeller(id: string): Promise<void> {
     const supabase = await requireAuth();
 
+    const { count } = await supabase.from("textbook_items").select("id", { count: "exact", head: true }).eq("seller_id", id);
+    if (count && count > 0) {
+        throw new Error("Nie można usunąć sprzedawcy, który ma przypisane podręczniki. Usuń je najpierw.");
+    }
+
     const { error } = await supabase.from("sellers").delete().eq("id", id);
 
     if (error) throw new Error(error.message);
@@ -141,6 +146,16 @@ export async function updateTextbookItem(input: UpdateTextbookItemInput): Promis
 
 export async function deleteTextbookItem(id: string): Promise<void> {
     const supabase = await requireAuth();
+
+    const { count: saleCount } = await supabase.from("sale_items").select("id", { count: "exact", head: true }).eq("textbook_item_id", id);
+    if (saleCount && saleCount > 0) {
+        throw new Error("Nie można usunąć podręcznika, który został sprzedany. Sprzedaż musi zostać najpierw usunięta.");
+    }
+
+    const { count: reservationCount } = await supabase.from("reservation_items").select("id", { count: "exact", head: true }).eq("textbook_item_id", id);
+    if (reservationCount && reservationCount > 0) {
+        throw new Error("Nie można usunąć podręcznika, który jest zarezerwowany. Rezerwacja musi zostać najpierw usunięta.");
+    }
 
     const { error } = await supabase.from("textbook_items").delete().eq("id", id);
 

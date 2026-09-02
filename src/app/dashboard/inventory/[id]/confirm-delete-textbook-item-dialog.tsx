@@ -55,10 +55,22 @@ export function ConfirmDeleteTextbookItemDialog({ open, onOpenChange, item }: Co
                         <span className="font-bold">Tej operacji nie można cofnąć.</span>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
+                {item && item.status === "sold" && (
+                    <div className="flex flex-col gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-center text-sm">
+                        <p className="font-semibold text-destructive">Ten podręcznik został sprzedany.</p>
+                        <p className="text-muted-foreground">Nie można go usunąć. Jeśli to błąd, skontaktuj się z administratorem.</p>
+                    </div>
+                )}
+                {item && item.status === "reserved" && (
+                    <div className="flex flex-col gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-center text-sm">
+                        <p className="font-semibold text-destructive">Ten podręcznik jest zarezerwowany.</p>
+                        <p className="text-muted-foreground">Anuluj rezerwację, zanim usuniesz podręcznik.</p>
+                    </div>
+                )}
                 {error && <p className="text-destructive text-sm">{error}</p>}
                 <AlertDialogFooter>
                     <AlertDialogCancel variant="outline">Anuluj</AlertDialogCancel>
-                    <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
+                    <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={isSubmitting || item?.status !== "available"}>
                         {isSubmitting ? "Usuwanie..." : "Usuń"}
                     </AlertDialogAction>
                 </AlertDialogFooter>
