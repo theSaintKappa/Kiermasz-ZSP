@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { saveTerms } from "@/actions/terms";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateTime } from "@/lib/format-utils";
+import { useUserStore } from "@/stores/user-store";
 
 type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
 
@@ -21,14 +22,21 @@ export function TermsEditor({ eventId, initialContent, initialUpdatedAt }: Terms
     const [status, setStatus] = useState<SaveStatus>("idle");
     const [lastSavedAt, setLastSavedAt] = useState<string | null>(initialUpdatedAt);
 
+    const isSuperAdmin = useUserStore((s) => s.isSuperAdmin);
+    const initializeUser = useUserStore((s) => s.initialize);
+
     const contentRef = useRef(content);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const savingRef = useRef(false);
     const pendingRef = useRef(false);
 
+    useEffect(() => {
+        initializeUser();
+    }, [initializeUser]);
+
     const performSave = useCallback(
         async (value: string) => {
-            if (!eventId || savingRef.current) {
+            if (!eventId || !isSuperAdmin || savingRef.current) {
                 pendingRef.current = true;
                 return;
             }
@@ -49,7 +57,7 @@ export function TermsEditor({ eventId, initialContent, initialUpdatedAt }: Terms
                 }
             }
         },
-        [eventId],
+        [eventId, isSuperAdmin],
     );
 
     const scheduleSave = useCallback(
@@ -104,13 +112,14 @@ export function TermsEditor({ eventId, initialContent, initialUpdatedAt }: Terms
                 <h2 className="font-heading font-semibold text-lg">Regulamin</h2>
                 {statusText && <span className={`text-xs ${status === "error" ? "text-destructive" : "text-muted-foreground"}`}>{statusText}</span>}
             </div>
+            {!isSuperAdmin && <p className="text-muted-foreground text-xs">Nie posiadasz uprawnień do edycji regulaminu.</p>}
             <div className="grid min-h-125 flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
                 <Textarea
                     value={content}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    disabled={!eventId}
-                    placeholder="Wpisz treść regulaminu w formacie Markdown..."
+                    disabled={!eventId || !isSuperAdmin}
+                    placeholder={isSuperAdmin ? "Wpisz treść regulaminu w formacie Markdown..." : "Brak treści regulaminu."}
                     aria-label="Treść regulaminu"
                     className="field-sizing-fixed h-full w-full resize-none font-[ui-monospace,SFMono-Regular,Menlo,Consolas,monospace] text-sm"
                 />
