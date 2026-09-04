@@ -79,6 +79,7 @@ export function CreateTitleDialog({ open, onOpenChange, title, initialIsbn, onSu
 
     const lookupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const coverInputRef = useRef<HTMLInputElement>(null);
+    const previousIsEditRef = useRef(isEdit);
 
     const form = useForm<CreateTitleFormValues>({
         resolver: zodResolver(textbookTitleFormSchema),
@@ -157,6 +158,32 @@ export function CreateTitleDialog({ open, onOpenChange, title, initialIsbn, onSu
             setServerError(null);
         }
     }, [open, title, isEdit, form.reset]);
+
+    useEffect(() => {
+        if (previousIsEditRef.current && !isEdit) {
+            form.reset({
+                isbn: "",
+                title: "",
+                subtitle: "",
+                authors: [],
+                publisher: "",
+                publishing_year: undefined,
+                subject_id: null,
+                subject_name: null,
+                level: "basic",
+            });
+            if (coverPreview && coverFile) URL.revokeObjectURL(coverPreview);
+            setCoverFile(null);
+            setCoverUrl("");
+            setCoverPreview(null);
+            setCoverRemoved(false);
+            setLookupError(null);
+            setLookupResult(null);
+            setServerError(null);
+            setSubjectValue("");
+        }
+        previousIsEditRef.current = isEdit;
+    }, [isEdit, form.reset, coverFile, coverPreview]);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: form.setValue is stable and we only want to prefill ISBN when dialog opens with initialIsbn
     useEffect(() => {
@@ -588,7 +615,7 @@ export function CreateTitleDialog({ open, onOpenChange, title, initialIsbn, onSu
                                             {textbookTitleFormSchema.shape.isbn.safeParse(watchIsbn).success && (
                                                 <TooltipTrigger
                                                     render={
-                                                        <a href={`https://www.taniaksiazka.pl/Search?q=${form.getValues("isbn")}`} className={buttonVariants({ variant: "outline", size: "icon" })} target="_blank" rel="noopener noreferrer">
+                                                        <a href={`https://www.empik.com/szukaj/produkt?q=${form.getValues("isbn")}&qtype=basicForm`} className={buttonVariants({ variant: "outline", size: "icon" })} target="_blank" rel="noopener noreferrer">
                                                             <HugeiconsIcon icon={AnonymousIcon} />
                                                             <span className="sr-only">Ukradnij zdjęcie okładki</span>
                                                         </a>

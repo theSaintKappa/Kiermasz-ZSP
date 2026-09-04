@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import sharp from "sharp";
 import { textbookTitleServerSchema, textbookTitleUpdateSchema } from "@/lib/schemas";
@@ -48,7 +49,8 @@ export async function createTitle(formData: FormData): Promise<{ id: string }> {
                 .webp({ quality: 85 })
                 .toBuffer();
 
-            await uploadCoverToStorage(webpBuffer, textbookId, supabase);
+            const coverPath = await uploadCoverToStorage(webpBuffer);
+            await supabase.from("textbook_titles").update({ cover_path: coverPath }).eq("id", textbookId);
         } catch {
             // Cover upload is optional — don't fail the whole request
         }
@@ -59,7 +61,8 @@ export async function createTitle(formData: FormData): Promise<{ id: string }> {
             const imageBuffer = Buffer.from(await response.arrayBuffer());
             const webpBuffer = await sharp(imageBuffer).webp({ quality: 85 }).toBuffer();
 
-            await uploadCoverToStorage(webpBuffer, textbookId, supabase);
+            const coverPath = await uploadCoverToStorage(webpBuffer);
+            await supabase.from("textbook_titles").update({ cover_path: coverPath }).eq("id", textbookId);
         } catch {
             // Cover URL fetch is optional — don't fail the whole request
         }
@@ -84,6 +87,9 @@ export async function updateTitle(formData: FormData): Promise<{ id: string }> {
     } = await supabase.auth.getUser();
     if (!user) throw new Error("Nie jesteś zalogowany.");
 
+    const { data: existingTitle, error: existingTitleError } = await supabase.from("textbook_titles").select("cover_path").eq("id", id).single();
+    if (existingTitleError) throw new Error(existingTitleError.message);
+
     const { error } = await supabase
         .from("textbook_titles")
         .update({
@@ -101,14 +107,15 @@ export async function updateTitle(formData: FormData): Promise<{ id: string }> {
 
     if (coverRemoved) {
         await supabase.from("textbook_titles").update({ cover_path: null }).eq("id", id);
-        const serviceClient = createServiceClient();
-        await serviceClient.storage.from("textbook-covers").remove([`covers/${id}.webp`]);
+        await removeCoverFromStorage(existingTitle.cover_path);
     } else if (cover && cover.size > 0) {
         try {
             const webpBuffer = await sharp(Buffer.from(await cover.arrayBuffer()))
                 .webp({ quality: 85 })
                 .toBuffer();
-            await uploadCoverToStorage(webpBuffer, id, supabase);
+            const coverPath = await uploadCoverToStorage(webpBuffer);
+            await supabase.from("textbook_titles").update({ cover_path: coverPath }).eq("id", id);
+            await removeCoverFromStorage(existingTitle.cover_path);
         } catch {
             // Cover upload is optional
         }
@@ -118,7 +125,9 @@ export async function updateTitle(formData: FormData): Promise<{ id: string }> {
             if (!response.ok) throw new Error("Nie udało się pobrać obrazu z podanego adresu.");
             const imageBuffer = Buffer.from(await response.arrayBuffer());
             const webpBuffer = await sharp(imageBuffer).webp({ quality: 85 }).toBuffer();
-            await uploadCoverToStorage(webpBuffer, id, supabase);
+            const coverPath = await uploadCoverToStorage(webpBuffer);
+            await supabase.from("textbook_titles").update({ cover_path: coverPath }).eq("id", id);
+            await removeCoverFromStorage(existingTitle.cover_path);
         } catch {
             // Cover URL fetch is optional
         }
@@ -128,17 +137,22 @@ export async function updateTitle(formData: FormData): Promise<{ id: string }> {
     return { id };
 }
 
-async function uploadCoverToStorage(webpBuffer: Buffer, textbookId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
-    const coverPath = `covers/${textbookId}.webp`;
+async function uploadCoverToStorage(webpBuffer: Buffer): Promise<string> {
+    const coverPath = `covers/${randomUUID()}.webp`;
     const serviceClient = createServiceClient();
     const { error: uploadError } = await serviceClient.storage.from("textbook-covers").upload(coverPath, webpBuffer, {
         contentType: "image/webp",
-        upsert: true,
+        upsert: false,
     });
 
-    if (!uploadError) {
-        await supabase.from("textbook_titles").update({ cover_path: coverPath }).eq("id", textbookId);
-    }
+    if (uploadError) throw new Error(uploadError.message);
+    return coverPath;
+}
+
+async function removeCoverFromStorage(coverPath: string | null) {
+    if (!coverPath) return;
+    const serviceClient = createServiceClient();
+    await serviceClient.storage.from("textbook-covers").remove([coverPath]);
 }
 
 export async function deleteTitle(id: string): Promise<void> {
@@ -148,6 +162,9 @@ export async function deleteTitle(id: string): Promise<void> {
     } = await supabase.auth.getUser();
     if (!user) throw new Error("Nie jesteś zalogowany.");
 
+    const { data: title, error: titleError } = await supabase.from("textbook_titles").select("cover_path").eq("id", id).single();
+    if (titleError) throw new Error(titleError.message);
+
     const { count } = await supabase.from("textbook_items").select("id", { count: "exact", head: true }).eq("title_id", id);
     if (count && count > 0) {
         throw new Error("Nie można usunąć tytułu, który ma przypisane egzemplarze. Usuń je najpierw.");
@@ -156,8 +173,7 @@ export async function deleteTitle(id: string): Promise<void> {
     const { error } = await supabase.from("textbook_titles").delete().eq("id", id);
     if (error) throw new Error(error.message);
 
-    const serviceClient = createServiceClient();
-    await serviceClient.storage.from("textbook-covers").remove([`covers/${id}.webp`]);
+    await removeCoverFromStorage(title.cover_path);
 
     revalidatePath("/dashboard/titles");
 }
