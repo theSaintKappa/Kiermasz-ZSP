@@ -36,7 +36,6 @@ ENV NODE_ENV=production
 
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-ARG SUPABASE_SERVICE_ROLE_KEY
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
@@ -44,7 +43,7 @@ ARG SUPABASE_SERVICE_ROLE_KEY
 # ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build Next.js application
-RUN bun run build
+RUN SKIP_ENV_VALIDATION=1 bun run build
 
 # ============================================
 # Stage 3: Run Next.js application
