@@ -27,12 +27,11 @@ type AddItemFormValues = z.infer<typeof addItemSchema>;
 interface AddTextbookItemProps {
     sellerId: string;
     onAdded?: () => void;
-    onCreateTitle?: () => void;
-    selectedTitleId?: string | null;
-    onTitleSelect?: (id: string | null) => void;
+    onCreateTitle?: (isbn?: string) => void;
+    selectedTitleOption?: TextbookTitleOption | null;
 }
 
-export function AddTextbookItem({ sellerId, onAdded, onCreateTitle, selectedTitleId, onTitleSelect }: AddTextbookItemProps) {
+export function AddTextbookItem({ sellerId, onAdded, onCreateTitle, selectedTitleOption }: AddTextbookItemProps) {
     const [serverError, setServerError] = useState<string | null>(null);
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
@@ -40,7 +39,7 @@ export function AddTextbookItem({ sellerId, onAdded, onCreateTitle, selectedTitl
     const priceInputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const { results, isLoading } = useTextbookSearch(search);
+    const { results, isLoading, clearCache } = useTextbookSearch(search);
 
     const {
         control,
@@ -55,12 +54,13 @@ export function AddTextbookItem({ sellerId, onAdded, onCreateTitle, selectedTitl
 
     // Handle external title selection (e.g. from CreateTitleDialog)
     useEffect(() => {
-        if (selectedTitleId) {
-            setValue("titleId", selectedTitleId);
-            onTitleSelect?.(null);
+        if (selectedTitleOption) {
+            setValue("titleId", selectedTitleOption.id);
+            setSelectedTitle(selectedTitleOption);
+            clearCache();
             setTimeout(() => priceInputRef.current?.focus(), 50);
         }
-    }, [selectedTitleId, setValue, onTitleSelect]);
+    }, [selectedTitleOption, setValue, clearCache]);
 
     // Barcode scanner auto-select: exact ISBN match
     useEffect(() => {
@@ -137,7 +137,8 @@ export function AddTextbookItem({ sellerId, onAdded, onCreateTitle, selectedTitl
                                                                     size="sm"
                                                                     onClick={() => {
                                                                         setOpen(false);
-                                                                        onCreateTitle();
+                                                                        const isbn = /^\d{10,13}$/.test(search.trim()) ? search.trim() : undefined;
+                                                                        onCreateTitle(isbn);
                                                                     }}
                                                                 >
                                                                     <HugeiconsIcon icon={PlusSignCircleIcon} strokeWidth={2} />

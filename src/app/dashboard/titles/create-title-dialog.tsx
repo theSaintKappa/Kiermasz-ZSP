@@ -21,6 +21,7 @@ import { textbookTitleFormSchema } from "@/lib/schemas";
 import { getCoverUrl } from "@/lib/storage-utils";
 import { createClient } from "@/lib/supabase/client";
 import type { EducationLevel, TextbookLookupResult } from "@/lib/textbook-utils";
+import type { TextbookTitleOption } from "../inventory/inventory-utils";
 import { AuthorsInput } from "./authors-input";
 import { useBarcodeScanner } from "./use-barcode-scanner";
 
@@ -56,11 +57,12 @@ interface CreateTitleDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     title?: TextbookRow | null;
-    onSuccess?: (id?: string) => void;
+    initialIsbn?: string | null;
+    onSuccess?: (title?: TextbookTitleOption) => void;
     onDelete?: () => void;
 }
 
-export function CreateTitleDialog({ open, onOpenChange, title, onSuccess, onDelete }: CreateTitleDialogProps) {
+export function CreateTitleDialog({ open, onOpenChange, title, initialIsbn, onSuccess, onDelete }: CreateTitleDialogProps) {
     const isEdit = !!title;
     const existingCoverUrl = isEdit ? getCoverUrl(title.cover_path) : null;
     const [serverError, setServerError] = useState<string | null>(null);
@@ -155,6 +157,13 @@ export function CreateTitleDialog({ open, onOpenChange, title, onSuccess, onDele
             setServerError(null);
         }
     }, [open, title, isEdit, form.reset]);
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: form.setValue is stable and we only want to prefill ISBN when dialog opens with initialIsbn
+    useEffect(() => {
+        if (open && initialIsbn && !isEdit) {
+            form.setValue("isbn", initialIsbn);
+        }
+    }, [open, initialIsbn]);
 
     const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -315,7 +324,16 @@ export function CreateTitleDialog({ open, onOpenChange, title, onSuccess, onDele
 
                 const result = await createTitle(formData);
                 resetAll();
-                onSuccess?.(result.id);
+                onSuccess?.({
+                    id: result.id,
+                    title: data.title,
+                    subtitle: data.subtitle || null,
+                    isbn: data.isbn,
+                    publisher: data.publisher || null,
+                    publishingYear: data.publishing_year ?? null,
+                    subjectName: null,
+                    coverPath: null,
+                });
             }
             handleOpenChange(false);
         } catch (err) {

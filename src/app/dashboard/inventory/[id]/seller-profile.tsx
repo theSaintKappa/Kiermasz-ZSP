@@ -18,7 +18,7 @@ import { formatPrice } from "@/lib/format-utils";
 import { getCoverUrl } from "@/lib/storage-utils";
 import { useSetBreadcrumbLabel } from "../../breadcrumb-nav";
 import { CreateTitleDialog } from "../../titles/create-title-dialog";
-import { type SellerRow, statusLabel, statusVariant, type TextbookItemRow } from "../inventory-utils";
+import { type SellerRow, statusLabel, statusVariant, type TextbookItemRow, type TextbookTitleOption } from "../inventory-utils";
 import { AddTextbookItem } from "./add-textbook-item";
 import { ConfirmDeleteSellerDialog } from "./confirm-delete-seller-dialog";
 import { ConfirmDeleteTextbookItemDialog } from "./confirm-delete-textbook-item-dialog";
@@ -41,7 +41,8 @@ export function SellerProfile({ seller, items, showBackButton }: SellerProfilePr
     const [editItem, setEditItem] = useState<TextbookItemRow | null>(null);
     const [deleteItem, setDeleteItem] = useState<TextbookItemRow | null>(null);
     const [createTitleOpen, setCreateTitleOpen] = useState(false);
-    const [selectedTitleId, setSelectedTitleId] = useState<string | null>(null);
+    const [selectedTitleOption, setSelectedTitleOption] = useState<TextbookTitleOption | null>(null);
+    const [initialIsbn, setInitialIsbn] = useState<string | null>(null);
 
     useEffect(() => {
         setLabel(seller.id, `${seller.firstName} ${seller.lastName}`);
@@ -124,7 +125,7 @@ export function SellerProfile({ seller, items, showBackButton }: SellerProfilePr
             {/* Add textbook */}
             <div>
                 <h3 className="mb-3 font-medium text-sm">Dodaj podręcznik</h3>
-                <AddTextbookItem sellerId={seller.id} onCreateTitle={() => setCreateTitleOpen(true)} selectedTitleId={selectedTitleId} onTitleSelect={setSelectedTitleId} />
+                <AddTextbookItem sellerId={seller.id} onCreateTitle={(isbn) => { setInitialIsbn(isbn ?? null); setCreateTitleOpen(true); }} selectedTitleOption={selectedTitleOption} />
             </div>
 
             {/* Textbook items list */}
@@ -229,10 +230,14 @@ export function SellerProfile({ seller, items, showBackButton }: SellerProfilePr
             />
             <CreateTitleDialog
                 open={createTitleOpen}
-                onOpenChange={setCreateTitleOpen}
-                onSuccess={(id) => {
-                    if (id) {
-                        setSelectedTitleId(id);
+                onOpenChange={(open) => {
+                    setCreateTitleOpen(open);
+                    if (!open) setInitialIsbn(null);
+                }}
+                initialIsbn={initialIsbn}
+                onSuccess={(title) => {
+                    if (title) {
+                        setSelectedTitleOption(title);
                         router.refresh();
                     }
                 }}

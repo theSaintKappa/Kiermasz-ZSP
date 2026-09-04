@@ -70,5 +70,9 @@ export function useTextbookSearch(query: string) {
         };
     }, []);
 
-    return { results, isLoading };
+    const clearCache = useCallback(() => {
+        popularCacheRef.current = null;
+    }, []);
+
+    return { results, isLoading, clearCache };
 }
