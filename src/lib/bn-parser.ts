@@ -142,6 +142,12 @@ function cleanAuthorName(raw: string): string {
 
 const PUBLISHER_ALIASES: Record<string, string> = {
     "gdańskie wydawnictwo oświatowe": "GWO",
+    "wydawnictwo szkolne i pedagogiczne": "WSiP",
+    "wydawnictwa szkolne i pedagogiczne": "WSiP",
+    "person cenral  europe": "Pearson",
+    "person central  europe": "Pearson",
+    "pearson central europe": "Pearson",
+    "helion edukacja": "Helion",
 };
 
 function extractPublisher(fields: MarcField[]): string | null {
