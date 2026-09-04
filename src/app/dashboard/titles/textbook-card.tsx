@@ -52,9 +52,14 @@ export function TextbookCard({ textbook, onEdit }: TextbookCardProps) {
                 )}
                 <div className="opacity-100 sm:opacity-0 sm:transition-opacity sm:duration-300 sm:group-hover/card:opacity-100">
                     <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-linear-to-t from-black/60 via-black/10 to-transparent p-3">
-                        <Badge variant="secondary" className="absolute top-2 left-2 text-[10px]">
-                            {LEVEL_LABELS[textbook.level] ?? textbook.level}
-                        </Badge>
+                        <div className="absolute top-2 left-2 flex flex-col gap-1">
+                            <Badge variant="secondary" className="text-[10px]">
+                                {LEVEL_LABELS[textbook.level] ?? textbook.level}
+                            </Badge>
+                            <Badge className="text-[10px]">
+                                {textbook.itemCount} {textbook.itemCount === 1 ? "egzemplarz" : textbook.itemCount < 5 && textbook.itemCount > 1 ? "egzemplarze" : "egzemplarzy"}
+                            </Badge>
+                        </div>
                         <div className="flex items-center gap-1 text-white text-xs">
                             <div className="text-[10px] text-white/80 uppercase tracking-wider">ISBN</div>
                             <div>{textbook.isbn}</div>
