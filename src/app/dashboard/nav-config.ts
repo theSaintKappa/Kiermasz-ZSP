@@ -33,9 +33,9 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        id: "withdrawals",
+        id: "payouts",
         label: "Wypłaty",
-        items: [{ title: "Wypłacaj", url: "/dashboard/withdrawals", icon: AlmsIcon }],
+        items: [{ title: "Wypłacaj", url: "/dashboard/payouts", icon: AlmsIcon }],
     },
     {
         id: "administration",
