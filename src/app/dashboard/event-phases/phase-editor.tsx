@@ -73,7 +73,11 @@ export function PhaseEditor({ phase, siblings, isSuperAdmin, onSaved, className 
     };
 
     const handleSave = async () => {
-        if (range.from && range.to && range.from >= range.to) {
+        // End date is picked at local midnight — extend to end of day so the picked day stays inclusive
+        const endsAt = range.to ? new Date(range.to) : null;
+        endsAt?.setHours(23, 59, 59, 999);
+
+        if (range.from && endsAt && range.from >= endsAt) {
             setError("Data rozpoczęcia musi być wcześniejsza niż data zakończenia.");
             return;
         }
@@ -86,7 +90,7 @@ export function PhaseEditor({ phase, siblings, isSuperAdmin, onSaved, className 
             .from("event_phases")
             .update({
                 starts_at: range.from?.toISOString() ?? null,
-                ends_at: range.to?.toISOString() ?? null,
+                ends_at: endsAt?.toISOString() ?? null,
             })
             .eq("id", phase.id);
 

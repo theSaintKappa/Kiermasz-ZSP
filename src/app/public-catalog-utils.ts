@@ -45,6 +45,7 @@ export function formatDayDate(iso: string): string {
         day: "numeric",
         month: "long",
         year: "numeric",
+        timeZone: "Europe/Warsaw",
     });
 }
 
