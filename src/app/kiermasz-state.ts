@@ -60,6 +60,13 @@ export async function resolveKiermaszState(): Promise<KiermaszPageState> {
                     body: `Sprzedaż podręczników rusza ${formatDayDate(next.starts_at)}. Do zobaczenia!`,
                 };
             }
+            if (next.phase === "payout") {
+                return {
+                    kind: "message",
+                    title: "Sprzedaż zakończona",
+                    body: `Trwa rozliczanie kiermaszu. Wypłaty rozpoczną się ${formatDayDate(next.starts_at)}.`,
+                };
+            }
             return {
                 kind: "message",
                 title: "Kiermasz już wkrótce",
