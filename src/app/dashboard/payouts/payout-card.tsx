@@ -1,6 +1,6 @@
 "use client";
 
-import { BarcodeIcon, BookImageIcon, Building06Icon, CalendarMortarboardIcon, ChevronDownIcon, RotateLeft01Icon } from "@hugeicons/core-free-icons";
+import { BarcodeIcon, BookImageIcon, Building06Icon, CalendarMortarboardIcon, ChevronDownIcon, PrinterIcon, RotateLeft01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,16 +13,17 @@ import { getCoverUrl } from "@/lib/storage-utils";
 import { cn } from "@/lib/utils";
 import { LEVEL_SHORT_LABELS } from "../transactions/transactions-utils";
 import type { PayoutItemRow, PayoutSellerRow } from "./payouts-utils";
-import { textbookCountLabel, textbookReturnCountLabel } from "./payouts-utils";
+import { formatReceiptNumber, textbookCountLabel, textbookReturnCountLabel } from "./payouts-utils";
 
 interface PayoutCardProps {
     seller: PayoutSellerRow;
     isSuperAdmin: boolean;
     onConfirm: (s: PayoutSellerRow) => void;
     onUndo: (s: PayoutSellerRow) => void;
+    onPrint: (s: PayoutSellerRow) => void;
 }
 
-export function PayoutCard({ seller, isSuperAdmin, onConfirm, onUndo }: PayoutCardProps) {
+export function PayoutCard({ seller, isSuperAdmin, onConfirm, onUndo, onPrint }: PayoutCardProps) {
     const payout = seller.payout;
     const initials = `${seller.firstName[0] ?? ""}${seller.lastName[0] ?? ""}`.toUpperCase();
 
@@ -53,13 +54,30 @@ export function PayoutCard({ seller, isSuperAdmin, onConfirm, onUndo }: PayoutCa
                 {payout ? (
                     <div className="flex shrink-0 items-center gap-3">
                         <div className="flex flex-col items-end">
-                            <span className="font-semibold text-lg">{formatPrice(payout.amount)}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono text-muted-foreground text-xs">{formatReceiptNumber(payout.receiptNumber)}</span>
+                                <span className="font-semibold text-lg">{formatPrice(payout.amount)}</span>
+                            </div>
                             {payout.returnedCount > 0 && (
                                 <span className="text-muted-foreground text-xs">
                                     {payout.returnedCount} {textbookCountLabel(payout.returnedCount)} {textbookReturnCountLabel(payout.returnedCount)}
                                 </span>
                             )}
                         </div>
+                        <Tooltip>
+                            <TooltipTrigger
+                                render={
+                                    <span className="inline-block w-fit">
+                                        <Button size="icon-xs" variant="ghost" className="text-muted-foreground" onClick={() => onPrint(seller)}>
+                                            <HugeiconsIcon icon={PrinterIcon} className="size-4" />
+                                        </Button>
+                                    </span>
+                                }
+                            />
+                            <TooltipContent>
+                                <p>Drukuj potwierdzenie</p>
+                            </TooltipContent>
+                        </Tooltip>
                         {isSuperAdmin && (
                             <Tooltip>
                                 <TooltipTrigger

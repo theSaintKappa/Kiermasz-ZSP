@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const SELLER_SELECT = `
     id, first_name, last_name, class_symbol,
-    payouts(id, amount, returned_count, paid_at),
+    payouts(id, amount, returned_count, paid_at, receipt_number, admin:profiles(first_name, last_name)),
     textbook_items(
         id, price, status,
         textbook_titles(title, subtitle, isbn, publisher, publishing_year, level, cover_path, subject:subjects(name)),
@@ -50,6 +50,8 @@ export default async function PayoutsPage({ searchParams }: PayoutsPageProps) {
                   amount: payoutRaw.amount as number,
                   returnedCount: payoutRaw.returned_count as number,
                   paidAt: payoutRaw.paid_at as string,
+                  receiptNumber: payoutRaw.receipt_number as number,
+                  adminName: [payoutRaw.admin?.first_name, payoutRaw.admin?.last_name].filter(Boolean).join(" ") || null,
               }
             : null;
 

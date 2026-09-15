@@ -133,3 +133,66 @@
         @apply font-sans;
     }
 }
+
+@media print {
+    @page {
+        size: A4;
+        margin: 14mm;
+    }
+
+    html,
+    body {
+        height: auto !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+
+    body:has([data-slot="payout-receipt"]) > *:not([data-slot="dialog-portal"]) {
+        display: none !important;
+    }
+
+    [data-slot="dialog-overlay"],
+    [data-slot="dialog-close"],
+    [data-base-ui-inert] {
+        display: none !important;
+    }
+
+    [data-slot="dialog-content"] {
+        position: static !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        animation: none !important;
+        transform: none !important;
+    }
+
+    [data-slot="dialog-content"]:where(.-translate-x-1\/2),
+    [data-slot="dialog-content"]:where(.-translate-y-1\/2) {
+        translate: 0 0 !important;
+    }
+
+    /* Printable page box = 297mm − 2 × 14mm = 269mm. 268mm leaves rounding slack */
+    [data-slot="payout-receipt"] {
+        min-height: 268mm;
+        color-scheme: light;
+    }
+
+    [data-slot="payout-signatures"] {
+        margin-top: auto !important;
+    }
+
+    [data-slot="payout-receipt"] tr {
+        break-inside: avoid;
+    }
+
+    [data-slot="payout-receipt"] thead {
+        display: table-header-group;
+    }
+}

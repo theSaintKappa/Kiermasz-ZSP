@@ -4,7 +4,7 @@ import { AlmsIcon, Loading03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { confirmPayout } from "@/actions/payout";
+import { type ConfirmedPayout, confirmPayout } from "@/actions/payout";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { formatPrice } from "@/lib/format-utils";
 import type { PayoutSellerRow } from "./payouts-utils";
@@ -14,9 +14,10 @@ interface ConfirmPayoutDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     seller: PayoutSellerRow | null;
+    onConfirmed?: (seller: PayoutSellerRow, payout: ConfirmedPayout) => void;
 }
 
-export function ConfirmPayoutDialog({ open, onOpenChange, seller }: ConfirmPayoutDialogProps) {
+export function ConfirmPayoutDialog({ open, onOpenChange, seller, onConfirmed }: ConfirmPayoutDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -30,9 +31,10 @@ export function ConfirmPayoutDialog({ open, onOpenChange, seller }: ConfirmPayou
         setIsSubmitting(true);
         setError(null);
         try {
-            await confirmPayout(seller.sellerId);
+            const result = await confirmPayout(seller.sellerId);
             handleOpenChange(false);
             toast.success("Wypłata potwierdzona.");
+            onConfirmed?.(seller, result);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Wystąpił nieznany błąd.");
         } finally {

@@ -20,7 +20,15 @@ async function getEventId(): Promise<string> {
     return eventId;
 }
 
-export async function confirmPayout(sellerId: string): Promise<{ amount: number; returnedCount: number }> {
+export interface ConfirmedPayout {
+    id: string;
+    amount: number;
+    returnedCount: number;
+    paidAt: string;
+    receiptNumber: number;
+}
+
+export async function confirmPayout(sellerId: string): Promise<ConfirmedPayout> {
     const supabase = await requireAuth();
     const eventId = await getEventId();
 
@@ -31,7 +39,15 @@ export async function confirmPayout(sellerId: string): Promise<{ amount: number;
 
     if (error) throw new Error(error.message);
 
-    const result = data as { success: boolean; reason?: string; amount?: number; returnedCount?: number };
+    const result = data as {
+        success: boolean;
+        reason?: string;
+        amount?: number;
+        returnedCount?: number;
+        payoutId?: string;
+        paidAt?: string;
+        receiptNumber?: number;
+    };
 
     if (!result.success) {
         switch (result.reason) {
@@ -47,7 +63,13 @@ export async function confirmPayout(sellerId: string): Promise<{ amount: number;
     }
 
     revalidatePath("/dashboard/payouts");
-    return { amount: result.amount ?? 0, returnedCount: result.returnedCount ?? 0 };
+    return {
+        id: result.payoutId ?? "",
+        amount: result.amount ?? 0,
+        returnedCount: result.returnedCount ?? 0,
+        paidAt: result.paidAt ?? "",
+        receiptNumber: result.receiptNumber ?? 0,
+    };
 }
 
 export async function undoPayout(payoutId: string): Promise<void> {

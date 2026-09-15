@@ -26,7 +26,7 @@ export interface PayoutSellerRow {
     unsoldItems: PayoutItemRow[];
     owedTotal: number;
     toReturnCount: number;
-    payout: { id: string; amount: number; returnedCount: number; paidAt: string } | null;
+    payout: { id: string; amount: number; returnedCount: number; paidAt: string; receiptNumber: number; adminName: string | null } | null;
 }
 
 export interface PayoutSummary {
@@ -78,4 +78,8 @@ export function buildSellerFilter(query: string): string | null {
         parts.push(`class_symbol.ilike.%${tok}%`);
     }
     return parts.join(",");
+}
+
+export function formatReceiptNumber(n: number): string {
+    return `PW/${String(n).padStart(4, "0")}`;
 }

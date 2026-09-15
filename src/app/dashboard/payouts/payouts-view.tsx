@@ -4,7 +4,9 @@ import { AiSearch02Icon, ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon, Crying
 import { HugeiconsIcon } from "@hugeicons/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
+import type { ConfirmedPayout } from "@/actions/payout";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { Item, ItemActions, ItemContent } from "@/components/ui/item";
@@ -16,6 +18,7 @@ import { useUserStore } from "@/stores/user-store";
 import { ConfirmPayoutDialog } from "./confirm-payout-dialog";
 import { ConfirmUndoPayoutDialog } from "./confirm-undo-payout-dialog";
 import { PayoutCard } from "./payout-card";
+import { PayoutReceipt } from "./payout-receipt";
 import { PAGE_SIZE, type PayoutSellerRow, type PayoutSummary, sellerCountLabel } from "./payouts-utils";
 
 interface PayoutsViewProps {
@@ -39,6 +42,7 @@ export function PayoutsView({ sellers, totalCount, page, query, unpaid, summary 
 
     const [confirmTarget, setConfirmTarget] = useState<PayoutSellerRow | null>(null);
     const [undoTarget, setUndoTarget] = useState<PayoutSellerRow | null>(null);
+    const [receiptTarget, setReceiptTarget] = useState<{ seller: PayoutSellerRow; payout: NonNullable<PayoutSellerRow["payout"]> } | null>(null);
 
     const hasQuery = query.trim().length > 0;
 
@@ -95,6 +99,26 @@ export function PayoutsView({ sellers, totalCount, page, query, unpaid, summary 
         startTransition(() => {
             router.push(`?${params.toString()}`);
         });
+    };
+
+    const handleConfirmed = (seller: PayoutSellerRow, result: ConfirmedPayout) => {
+        setReceiptTarget({
+            seller,
+            payout: {
+                id: result.id,
+                amount: result.amount,
+                returnedCount: result.returnedCount,
+                paidAt: result.paidAt,
+                receiptNumber: result.receiptNumber,
+                adminName: useUserStore.getState().name || null,
+            },
+        });
+    };
+
+    const handlePrint = (seller: PayoutSellerRow) => {
+        if (seller.payout) {
+            setReceiptTarget({ seller, payout: seller.payout });
+        }
     };
 
     const pageCount = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
@@ -159,7 +183,7 @@ export function PayoutsView({ sellers, totalCount, page, query, unpaid, summary 
                 ) : (
                     <div className="flex flex-col gap-3">
                         {sellers.map((s) => (
-                            <PayoutCard key={s.sellerId} seller={s} isSuperAdmin={isSuperAdmin} onConfirm={setConfirmTarget} onUndo={setUndoTarget} />
+                            <PayoutCard key={s.sellerId} seller={s} isSuperAdmin={isSuperAdmin} onConfirm={setConfirmTarget} onUndo={setUndoTarget} onPrint={handlePrint} />
                         ))}
                     </div>
                 )}
@@ -186,6 +210,7 @@ export function PayoutsView({ sellers, totalCount, page, query, unpaid, summary 
                     if (!open) setConfirmTarget(null);
                 }}
                 seller={confirmTarget}
+                onConfirmed={handleConfirmed}
             />
             <ConfirmUndoPayoutDialog
                 open={!!undoTarget}
@@ -194,6 +219,16 @@ export function PayoutsView({ sellers, totalCount, page, query, unpaid, summary 
                 }}
                 seller={undoTarget}
             />
+            <Dialog
+                open={!!receiptTarget}
+                onOpenChange={(open) => {
+                    if (!open) setReceiptTarget(null);
+                }}
+            >
+                <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0" showCloseButton>
+                    {receiptTarget && <PayoutReceipt seller={receiptTarget.seller} payout={receiptTarget.payout} />}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
