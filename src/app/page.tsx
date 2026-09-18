@@ -8,6 +8,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site-config";
+import { createClient } from "@/lib/supabase/server";
 import { CatalogSection } from "./catalog-section";
 import { CatalogShell } from "./catalog-shell";
 import { resolveKiermaszState } from "./kiermasz-state";
@@ -35,15 +36,15 @@ export const metadata: Metadata = {
     },
 };
 
-function Header() {
+function Header({ isAuthenticated }: { isAuthenticated: boolean }) {
     return (
         <header className="border-b">
             <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                 <Image src="/logo.svg" alt={`${SITE_NAME} — logo`} width={169} height={36} className="h-8 w-auto dark:invert" />
                 <div className="flex items-center gap-2">
                     <ModeToggle />
-                    <Button nativeButton={false} render={<Link href="/login" />}>
-                        Zaloguj się
+                    <Button nativeButton={false} render={<Link href={isAuthenticated ? "/dashboard" : "/login"} />}>
+                        {isAuthenticated ? "Przejdź do Panelu" : "Zaloguj się"}
                     </Button>
                 </div>
             </div>
@@ -95,6 +96,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
     const state = await resolveKiermaszState();
 
+    const supabase = await createClient();
+    const {
+        data: { session },
+    } = await supabase.auth.getSession();
+
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "WebSite",
@@ -111,7 +117,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     if (state.kind !== "selling") {
         return (
             <main className="flex min-h-svh w-full flex-col">
-                <Header />
+                <Header isAuthenticated={Boolean(session?.user)} />
                 {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD structured data for SEO */}
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
                 <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
@@ -128,7 +134,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
     return (
         <main className="flex min-h-svh w-full flex-col">
-            <Header />
+            <Header isAuthenticated={Boolean(session?.user)} />
             <h1 className="sr-only">Katalog podręczników — {SITE_NAME}</h1>
             {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD structured data for SEO */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
