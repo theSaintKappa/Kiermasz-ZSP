@@ -108,24 +108,12 @@ export default async function PayoutsPage({ searchParams }: PayoutsPageProps) {
     // Summary
     const summaryPromise = supabase.rpc("payout_summary", { p_event_id: eventId }).then(({ data }) => (data as PayoutSummary) ?? null);
 
-    // Fetch paid seller ids for the unpaid filter — embedded filters narrow the
-    // nested payload only, not the parent rows, so we exclude via top-level not.in.
-    let excludedSellerIds: string[] = [];
-    if (unpaid) {
-        const { data: paidRows } = await supabase.from("payouts").select("seller_id").eq("event_id", eventId);
-        excludedSellerIds = (paidRows ?? []).map((r) => r.seller_id);
-    }
-
     // Build rows query
     // biome-ignore lint/suspicious/noExplicitAny: PostgREST filter builder
     let rowsQ: any = supabase.from("sellers").select(SELLER_SELECT).eq("event_id", eventId);
 
-    if (nameFilter) {
-        rowsQ = rowsQ.or(nameFilter);
-    }
-    if (excludedSellerIds.length > 0) {
-        rowsQ = rowsQ.not("id", "in", `(${excludedSellerIds.join(",")})`);
-    }
+    if (nameFilter) rowsQ = rowsQ.or(nameFilter);
+    if (unpaid) rowsQ = rowsQ.filter("payouts!left.seller_id", "is", "null");
 
     rowsQ = rowsQ
         .order("last_name", { ascending: true })
@@ -133,14 +121,9 @@ export default async function PayoutsPage({ searchParams }: PayoutsPageProps) {
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
     // Count query
-    // biome-ignore lint/suspicious/noExplicitAny: PostgREST filter builder
-    let countQ: any = supabase.from("sellers").select("id", { count: "exact", head: true }).eq("event_id", eventId);
-    if (nameFilter) {
-        countQ = countQ.or(nameFilter);
-    }
-    if (excludedSellerIds.length > 0) {
-        countQ = countQ.not("id", "in", `(${excludedSellerIds.join(",")})`);
-    }
+    let countQ = supabase.from("sellers").select("id,payouts(seller_id)", { count: "exact", head: true }).eq("event_id", eventId);
+    if (nameFilter) countQ = countQ.or(nameFilter);
+    if (unpaid) countQ = countQ.filter("payouts!left.seller_id", "is", "null");
 
     const [{ data: rawSellers }, { count }, summary] = await Promise.all([rowsQ, countQ, summaryPromise]);
 
@@ -152,10 +135,9 @@ export default async function PayoutsPage({ searchParams }: PayoutsPageProps) {
         const clampedFrom = clampedPage * PAGE_SIZE;
         const clampedTo = clampedFrom + PAGE_SIZE - 1;
 
-        // biome-ignore lint/suspicious/noExplicitAny: PostgREST filter builder
-        let clampedQ: any = supabase.from("sellers").select(SELLER_SELECT).eq("event_id", eventId);
+        let clampedQ = supabase.from("sellers").select(SELLER_SELECT).eq("event_id", eventId);
         if (nameFilter) clampedQ = clampedQ.or(nameFilter);
-        if (excludedSellerIds.length > 0) clampedQ = clampedQ.not("id", "in", `(${excludedSellerIds.join(",")})`);
+        if (unpaid) clampedQ = clampedQ.filter("payouts!left.seller_id", "is", "null");
         clampedQ = clampedQ.order("last_name", { ascending: true }).order("first_name", { ascending: true }).range(clampedFrom, clampedTo);
 
         const { data: clampedSellers } = await clampedQ;
